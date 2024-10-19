@@ -1,4 +1,4 @@
-module pkg
+module github.com/xinghe903/xinghe/pkg
 
 go 1.23.1
 
