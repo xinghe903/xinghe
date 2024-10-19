@@ -1,12 +1,13 @@
 package po
 
 import (
+	"github.com/xinghe903/xinghe/pkg/distribute/hash"
 	"gorm.io/gorm"
 )
 
 const (
 	userTableName = "x_auth_user"
-	prefixId      = "auth-"
+	userPrefixId  = "auth-"
 )
 
 const (
@@ -33,5 +34,5 @@ func (u *User) TableName() string {
 }
 
 func (u *User) GenerateID(seed int64) string {
-	return GetHashId
+	return hash.GetHashId(seed, userPrefixId)
 }

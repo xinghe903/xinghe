@@ -1,7 +1,7 @@
 syntax = "proto3";
 package kratos.api;
 
-option go_package = "c1/internal/conf;conf";
+option go_package = "auth/internal/conf;conf";
 
 import "google/protobuf/duration.proto";
 
@@ -23,6 +23,7 @@ message Server {
   }
   HTTP http = 1;
   GRPC grpc = 2;
+  string node_id = 3;
 }
 
 message Data {

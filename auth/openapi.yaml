@@ -38,10 +38,22 @@ paths:
             responses:
                 "200":
                     description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/auth.v1.LogoutRsp'
+                    content: {}
+    /auth/register:
+        post:
+            tags:
+                - AuthService
+            operationId: AuthService_Register
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/auth.v1.RegisterReq'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
 components:
     schemas:
         auth.v1.LoginReq:
@@ -61,10 +73,12 @@ components:
             properties:
                 token:
                     type: string
-        auth.v1.LogoutRsp:
+        auth.v1.RegisterReq:
             type: object
             properties:
-                message:
+                username:
+                    type: string
+                password:
                     type: string
 tags:
     - name: AuthService

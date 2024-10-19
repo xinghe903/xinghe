@@ -6,22 +6,27 @@ import (
 	"context"
 
 	"github.com/go-kratos/kratos/v2/log"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type AuthService struct {
 	authpb.UnimplementedAuthServiceServer
-	uc     *biz.C1Usecase
+	uc     *biz.AuthUsecase
 	logger *log.Helper
 }
 
-func NewAuthService(uc *biz.C1Usecase, logger log.Logger) *AuthService {
+func NewAuthService(uc *biz.AuthUsecase, logger log.Logger) *AuthService {
 	return &AuthService{uc: uc, logger: log.NewHelper(logger)}
+}
+
+func (s *AuthService) Register(ctx context.Context, req *authpb.RegisterReq) (*emptypb.Empty, error) {
+	return nil, nil
 }
 
 func (s *AuthService) Login(ctx context.Context, req *authpb.LoginReq) (*authpb.LoginRsp, error) {
 	return nil, nil
 }
 
-func (s *AuthService) Logout(ctx context.Context, req *authpb.LogoutReq) (*authpb.LogoutRsp, error) {
+func (s *AuthService) Logout(ctx context.Context, req *authpb.LogoutReq) (*emptypb.Empty, error) {
 	return nil, nil
 }
