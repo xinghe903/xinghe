@@ -79,11 +79,19 @@ func (p *userRepo) DeleteUser(ctx context.Context, id string) error {
 }
 func (p *userRepo) ListUser(ctx context.Context, cond *po.PageQuery[po.User]) (*po.SearchList[po.User], error) {
 	var rsp po.SearchList[po.User]
+	pageSize, pageNum := cond.PageSize, cond.PageNum
+	if pageSize == 0 {
+		pageSize = 10
+	}
+	if pageNum == 0 {
+		pageNum = 1
+	}
+
 	if err := p.db.Model(cond.Condition).
 		Where(cond.Condition).
 		Count(&rsp.Total).
-		Offset(int(cond.PageNum-1) * int(cond.PageSize)).
-		Limit(int(cond.PageSize)).
+		Offset(int(pageNum-1) * int(pageSize)).
+		Limit(int(pageSize)).
 		Find(&rsp.Data).Error; err != nil {
 		return nil, errors.Join(ErrQueryUser, err)
 	}

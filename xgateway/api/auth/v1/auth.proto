@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package auth.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "auth/api/auth/v1;v1";
+option java_multiple_files = true;
+option java_package = "dev.kratos.api.auth.v1";
+option java_outer_classname = "authProtoV1";
+import "google/protobuf/empty.proto";
+
+
+service AuthService {
+  rpc Register (RegisterReq) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/auth/register",
+      body: "*",
+    };
+  }
+  rpc Login (LoginReq) returns (LoginRsp) {
+    option (google.api.http) = {
+      post: "/auth/login",
+      body: "*",
+    };
+  }
+  rpc Logout (LogoutReq) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/auth/logout",
+      body: "*",
+    };
+  }
+}
+
+message RegisterReq {
+  string username = 1;
+  string password = 2;
+}
+
+message LoginReq {
+  string username = 1;
+  string password = 2;
+}
+
+message LoginRsp {
+  string token = 1;
+}
+
+message LogoutReq {
+  string token = 1;
+}
+

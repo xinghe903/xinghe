@@ -1,0 +1,84 @@
+# Generated with protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: AuthService API
+    version: 0.0.1
+paths:
+    /auth/login:
+        post:
+            tags:
+                - AuthService
+            operationId: AuthService_Login
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/auth.v1.LoginReq'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/auth.v1.LoginRsp'
+    /auth/logout:
+        post:
+            tags:
+                - AuthService
+            operationId: AuthService_Logout
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/auth.v1.LogoutReq'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /auth/register:
+        post:
+            tags:
+                - AuthService
+            operationId: AuthService_Register
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/auth.v1.RegisterReq'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+components:
+    schemas:
+        auth.v1.LoginReq:
+            type: object
+            properties:
+                username:
+                    type: string
+                password:
+                    type: string
+        auth.v1.LoginRsp:
+            type: object
+            properties:
+                token:
+                    type: string
+        auth.v1.LogoutReq:
+            type: object
+            properties:
+                token:
+                    type: string
+        auth.v1.RegisterReq:
+            type: object
+            properties:
+                username:
+                    type: string
+                password:
+                    type: string
+tags:
+    - name: AuthService

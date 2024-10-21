@@ -4,8 +4,9 @@ go 1.23.1
 
 require (
 	github.com/go-kratos/kratos/v2 v2.8.0
+	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/google/wire v0.6.0
-	github.com/xinghe903/xinghe/pkg v0.0.0-20241019075555-0307e7561165
+	github.com/xinghe903/xinghe/pkg v0.0.0-20241019092623-6ddd6674595f
 	go.uber.org/automaxprocs v1.5.1
 	google.golang.org/genproto/googleapis/api v0.0.0-20240528184218-531527333157
 	google.golang.org/grpc v1.65.0

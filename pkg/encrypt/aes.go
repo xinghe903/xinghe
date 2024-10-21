@@ -12,7 +12,7 @@ import (
 )
 
 type EncryptAes struct {
-	key string // 长度12的字符串
+	key string // 长度16的字符串
 }
 
 func NewEncryptAes(key string) *EncryptAes {

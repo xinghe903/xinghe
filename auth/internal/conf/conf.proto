@@ -8,6 +8,7 @@ import "google/protobuf/duration.proto";
 message Bootstrap {
   Server server = 1;
   Data data = 2;
+  Config config = 3;
 }
 
 message Server {
@@ -43,4 +44,8 @@ message Data {
   Database database = 1;
   Redis redis = 2;
   Client c2 = 3;
+}
+
+message Config {
+  string encrypt_key = 1;
 }

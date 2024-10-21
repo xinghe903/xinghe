@@ -24,7 +24,7 @@ func (s *AuthService) Register(ctx context.Context, req *authpb.RegisterReq) (*e
 }
 
 func (s *AuthService) Login(ctx context.Context, req *authpb.LoginReq) (*authpb.LoginRsp, error) {
-	return nil, nil
+	return &authpb.LoginRsp{Token: "123"}, nil
 }
 
 func (s *AuthService) Logout(ctx context.Context, req *authpb.LogoutReq) (*emptypb.Empty, error) {

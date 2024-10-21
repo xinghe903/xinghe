@@ -1,5 +1,5 @@
 server:
-  node_id: 1
+  node_id: "1"
   http:
     addr: 0.0.0.0:8000
     timeout: 1s
@@ -14,4 +14,5 @@ data:
     addr: 127.0.0.1:6379
     read_timeout: 0.2s
     write_timeout: 0.2s
-
+config:
+  encrypt_key: "jdgD46d7G7ObhwgU"

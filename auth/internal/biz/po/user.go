@@ -21,7 +21,7 @@ type StatusUser string
 type User struct {
 	gorm.Model
 	InstanceId string     `json:"instanceId,omitempty" gorm:"unique;column:instanceId;type:varchar(40);not null"`
-	Name       string     `json:"name,omitempty" gorm:"column:name;type:varchar(40)"`
+	Name       string     `json:"name,omitempty" gorm:"unique;column:name;type:varchar(40)"`
 	NickName   string     `json:"nickname,omitempty" gorm:"column:nickname;type:varchar(40)"`
 	Password   string     `json:"password,omitempty"  gorm:"column:password;type:varchar(40)"`
 	Email      string     `json:"email,omitempty"  gorm:"column:email;type:varchar(40)"`
