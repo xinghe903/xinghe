@@ -4,16 +4,16 @@ import (
 	"log"
 	"net/http"
 
-	// authclient "xgateway/client/auth"
-	authbakclient "xgateway/client/authbak"
+	authclient "xgateway/client/auth"
+	commentclient "xgateway/client/comment"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 )
 
 func startGw() {
 	gwmux := runtime.NewServeMux()
-	// authclient.Register(gwmux)
-	authbakclient.Register(gwmux)
+	authclient.Register(gwmux)
+	commentclient.Register(gwmux)
 	gwServer := &http.Server{
 		Addr:    ":8090",
 		Handler: gwmux,

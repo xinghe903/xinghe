@@ -3,7 +3,7 @@
 
 openapi: 3.0.3
 info:
-    title: AuthService API
+    title: ""
     version: 0.0.1
 paths:
     /auth/login:
@@ -54,6 +54,42 @@ paths:
                 "200":
                     description: OK
                     content: {}
+    /comment/comment:
+        post:
+            tags:
+                - CommentService
+            operationId: CommentService_CreateComment
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/comment.v1.CreateCommentReq'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/comment.v1.CreateCommentRsp'
+    /comment/comment/{id}:
+        get:
+            tags:
+                - CommentService
+            operationId: CommentService_GetComment
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/comment.v1.GetCommentRsp'
 components:
     schemas:
         auth.v1.LoginReq:
@@ -80,5 +116,47 @@ components:
                     type: string
                 password:
                     type: string
+        comment.v1.Comment:
+            type: object
+            properties:
+                id:
+                    type: string
+                content:
+                    type: string
+                author:
+                    type: string
+                createdAt:
+                    type: string
+                updatedAt:
+                    type: string
+        comment.v1.CreateCommentReq:
+            type: object
+            properties:
+                userId:
+                    type: string
+                replyUserId:
+                    type: string
+                subjectId:
+                    type: string
+                subjectType:
+                    type: integer
+                    format: enum
+                rootId:
+                    type: string
+                parentId:
+                    type: string
+                Content:
+                    type: string
+        comment.v1.CreateCommentRsp:
+            type: object
+            properties:
+                commentId:
+                    type: string
+        comment.v1.GetCommentRsp:
+            type: object
+            properties:
+                comment:
+                    $ref: '#/components/schemas/comment.v1.Comment'
 tags:
     - name: AuthService
+    - name: CommentService

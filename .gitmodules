@@ -1,0 +1,9 @@
+[submodule "xgateway/api"]
+	path = xgateway/api
+	url = git@github.com:xinghe903/xinghe-api.git
+[submodule "auth/api"]
+	path = auth/api
+	url = git@github.com:xinghe903/xinghe-api.git
+[submodule "comment/api"]
+	path = comment/api
+	url = git@github.com:xinghe903/xinghe-api.git
