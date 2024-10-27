@@ -4,6 +4,7 @@ go 1.23.1
 
 require (
 	github.com/go-kratos/kratos/v2 v2.8.1
+	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/speps/go-hashids/v2 v2.0.1
 	gorm.io/gorm v1.25.12
 )
