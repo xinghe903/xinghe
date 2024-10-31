@@ -14,27 +14,27 @@ import (
 	"gorm.io/gorm"
 )
 
-var _ repo.UserRepo = &userRepo{}
+var _ repo.RoleRepo = &roleRepo{}
 
-type userRepo struct {
+type roleRepo struct {
 	db        *gorm.DB
 	log       *log.Helper
 	builderId *hashid.Snowflake
 }
 
-func NewUserRepo(c *conf.Server, data *Data, logger log.Logger) repo.UserRepo {
+func NewRoleRepo(c *conf.Server, data *Data, logger log.Logger) repo.RoleRepo {
 	nodeId, err := strconv.Atoi(c.GetNodeId())
 	if err != nil {
 		panic(err.Error())
 	}
-	return &userRepo{
+	return &roleRepo{
 		db:        data.db,
 		log:       log.NewHelper(logger),
 		builderId: hashid.NewSnowflake(int64(nodeId)),
 	}
 }
 
-func (p *userRepo) Create(ctx context.Context, source *po.User) (string, error) {
+func (p *roleRepo) Create(ctx context.Context, source *po.Role) (string, error) {
 	if len(source.InstanceId) == 0 {
 		source.InstanceId = source.GenerateID(p.builderId.GenerateID())
 	}
@@ -43,40 +43,40 @@ func (p *userRepo) Create(ctx context.Context, source *po.User) (string, error) 
 	}
 	return source.InstanceId, nil
 }
-func (p *userRepo) Update(ctx context.Context, source *po.User) error {
+func (p *roleRepo) Update(ctx context.Context, source *po.Role) error {
 	if len(source.InstanceId) == 0 {
 		return errors.New("instance id is required")
 	}
-	if err := p.db.Model(&po.User{}).Where("instanceId = ?", source.InstanceId).Updates(source).Error; err != nil {
+	if err := p.db.Model(&po.Role{}).Where("instanceId = ?", source.InstanceId).Updates(source).Error; err != nil {
 		return fmt.Errorf("%s update: %s", source.TableName(), err.Error())
 	}
 	return nil
 }
-func (p *userRepo) Get(ctx context.Context, id string) (*po.User, error) {
+func (p *roleRepo) Get(ctx context.Context, id string) (*po.Role, error) {
 	if len(id) == 0 {
 		return nil, errors.New("instance id is required")
 	}
-	pm := &po.User{}
+	pm := &po.Role{}
 	if err := p.db.Model(pm).Where("instanceId = ?", id).First(pm).Error; err != nil {
 		return nil, fmt.Errorf("%s get: %s", pm.TableName(), err.Error())
 	}
 	return pm, nil
 }
-func (p *userRepo) Delete(ctx context.Context, id string) error {
+func (p *roleRepo) Delete(ctx context.Context, id string) error {
 	if len(id) == 0 {
 		return errors.New("instance id is required")
 	}
-	pm := &po.User{}
+	pm := &po.Role{}
 	if err := p.db.Where("instanceId =?", id).Delete(pm).Error; err != nil {
 		return fmt.Errorf("%s get: %s", pm.TableName(), err.Error())
 	}
 	return nil
 }
-func (p *userRepo) List(ctx context.Context, cond *po.PageQuery[po.User]) (*po.SearchList[po.User], error) {
+func (p *roleRepo) List(ctx context.Context, cond *po.PageQuery[po.Role]) (*po.SearchList[po.Role], error) {
 	if cond == nil {
 		return nil, errors.New("condition is required")
 	}
-	var rsp po.SearchList[po.User]
+	var rsp po.SearchList[po.Role]
 	md := p.db.Model(cond.Condition)
 	if cond.Condition != nil {
 		md = md.Where(cond.Condition)

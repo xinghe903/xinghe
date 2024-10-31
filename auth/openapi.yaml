@@ -3,9 +3,27 @@
 
 openapi: 3.0.3
 info:
-    title: AuthService API
+    title: ""
     version: 0.0.1
 paths:
+    /auth/auth:
+        get:
+            tags:
+                - AuthService
+            description: 鉴权
+            operationId: AuthService_Auth
+            parameters:
+                - name: token
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/auth.v1.AuthRsp'
     /auth/login:
         post:
             tags:
@@ -39,6 +57,100 @@ paths:
                 "200":
                     description: OK
                     content: {}
+    /auth/permission:
+        get:
+            tags:
+                - AuthService
+            description: 查询权限列表
+            operationId: AuthService_ListPermission
+            parameters:
+                - name: pageNumber
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/auth.v1.ListPermissionRsp'
+        post:
+            tags:
+                - AuthService
+            description: 创建权限
+            operationId: AuthService_CreatePermission
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/auth.v1.CreatePermissionReq'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /auth/permission/{id}:
+        get:
+            tags:
+                - AuthService
+            description: 查询权限详情
+            operationId: AuthService_GetPermission
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/auth.v1.GetPermissionRsp'
+        put:
+            tags:
+                - AuthService
+            description: 修改权限
+            operationId: AuthService_UpdatePermission
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/auth.v1.UpdatePermissionReq'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+        delete:
+            tags:
+                - AuthService
+            description: 删除权限
+            operationId: AuthService_DeletePermission
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
     /auth/register:
         post:
             tags:
@@ -54,8 +166,187 @@ paths:
                 "200":
                     description: OK
                     content: {}
+    /auth/role:
+        get:
+            tags:
+                - AuthService
+            description: 查询角色列表
+            operationId: AuthService_ListRole
+            parameters:
+                - name: pageNumber
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/auth.v1.ListRoleRsp'
+        post:
+            tags:
+                - AuthService
+            description: 创建角色
+            operationId: AuthService_CreateRole
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/auth.v1.CreateRoleReq'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /auth/role/{id}:
+        get:
+            tags:
+                - AuthService
+            description: 查询角色详情
+            operationId: AuthService_GetRole
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/auth.v1.GetRoleRsp'
+        put:
+            tags:
+                - AuthService
+            description: 修改角色
+            operationId: AuthService_UpdateRole
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/auth.v1.UpdateRoleReq'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+        delete:
+            tags:
+                - AuthService
+            description: 删除角色
+            operationId: AuthService_DeleteRole
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /comment/comment:
+        post:
+            tags:
+                - CommentService
+            operationId: CommentService_CreateComment
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/comment.v1.CreateCommentReq'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/comment.v1.CreateCommentRsp'
+    /comment/comment/{id}:
+        get:
+            tags:
+                - CommentService
+            operationId: CommentService_GetComment
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/comment.v1.GetCommentRsp'
 components:
     schemas:
+        auth.v1.AuthRsp:
+            type: object
+            properties:
+                username:
+                    type: string
+        auth.v1.CreatePermissionReq:
+            type: object
+            properties:
+                name:
+                    type: string
+        auth.v1.CreateRoleReq:
+            type: object
+            properties:
+                name:
+                    type: string
+        auth.v1.GetPermissionRsp:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+        auth.v1.GetRoleRsp:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+        auth.v1.ListPermissionRsp:
+            type: object
+            properties:
+                permissions:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/auth.v1.Permission'
+                total:
+                    type: integer
+                    format: int32
+        auth.v1.ListRoleRsp:
+            type: object
+            properties:
+                roles:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/auth.v1.Role'
+                total:
+                    type: integer
+                    format: int32
         auth.v1.LoginReq:
             type: object
             properties:
@@ -73,6 +364,19 @@ components:
             properties:
                 token:
                     type: string
+        auth.v1.Permission:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                subjectType:
+                    type: string
+                subjectId:
+                    type: string
+                permission:
+                    type: string
         auth.v1.RegisterReq:
             type: object
             properties:
@@ -80,5 +384,68 @@ components:
                     type: string
                 password:
                     type: string
+        auth.v1.Role:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+        auth.v1.UpdatePermissionReq:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+        auth.v1.UpdateRoleReq:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+        comment.v1.Comment:
+            type: object
+            properties:
+                id:
+                    type: string
+                content:
+                    type: string
+                author:
+                    type: string
+                createdAt:
+                    type: string
+                updatedAt:
+                    type: string
+        comment.v1.CreateCommentReq:
+            type: object
+            properties:
+                userId:
+                    type: string
+                replyUserId:
+                    type: string
+                subjectId:
+                    type: string
+                subjectType:
+                    type: integer
+                    format: enum
+                rootId:
+                    type: string
+                parentId:
+                    type: string
+                Content:
+                    type: string
+        comment.v1.CreateCommentRsp:
+            type: object
+            properties:
+                commentId:
+                    type: string
+        comment.v1.GetCommentRsp:
+            type: object
+            properties:
+                comment:
+                    $ref: '#/components/schemas/comment.v1.Comment'
 tags:
     - name: AuthService
+    - name: CommentService

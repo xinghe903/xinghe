@@ -29,8 +29,13 @@ message Server {
 
 message Data {
   message Database {
-    string driver = 1;
-    string source = 2;
+    string username = 1;
+    string password = 2;
+    string host = 3;
+    string database = 4;
+    int64 max_open_connections = 5;
+    google.protobuf.Duration max_connection_life_time = 6;
+    int64 max_idle_connections = 7;
   }
   message Redis {
     string network = 1;

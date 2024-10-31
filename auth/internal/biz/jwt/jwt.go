@@ -82,7 +82,7 @@ func (j *JWT) ParseToken(tokenStr string) (*JwtRequest, error) {
 	return nil, ErrTokenParse
 }
 
-func generateToken(name string) string {
+func GenerateToken(name string) string {
 	j := NewJWT()
 	claims := j.CreateClaims(BaseClaims{
 		Name: name,
@@ -95,7 +95,7 @@ func generateToken(name string) string {
 	return token
 }
 
-func parseToken(tokenStr string) {
+func ParseToken(tokenStr string) *CustomClaims {
 	j := NewJWT()
 	claims, err := j.ParseToken(tokenStr)
 	if err != nil {
@@ -103,4 +103,5 @@ func parseToken(tokenStr string) {
 	}
 	fmt.Println("Parsed Claims:", claims)
 	// fmt.Println(claims.ExpiresAt.)
+	return (*CustomClaims)(claims)
 }
