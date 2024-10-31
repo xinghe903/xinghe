@@ -1,68 +1,57 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
+	"time"
 
-	authclient "xgateway/client/auth"
-	commentclient "xgateway/client/comment"
+	"xgateway/internal/conf"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 )
 
-func startGw() {
-	gwmux := runtime.NewServeMux()
-	authclient.Register(gwmux)
-	commentclient.Register(gwmux)
-	gwServer := &http.Server{
-		Addr:    ":8090",
-		Handler: gwmux,
-	}
-	err := gwServer.ListenAndServe()
-	if err != nil {
-		log.Fatalf("failed to start gateway server: %v", err)
+var flagconf string
+
+func init() {
+	flag.StringVar(&flagconf, "conf", "../../configs", "config path, eg: -conf config.yaml")
+	var cstZone = time.FixedZone("CST", 8*3600) // 东八
+	time.Local = cstZone
+}
+
+func Print(handler runtime.HandlerFunc) runtime.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request, params map[string]string) {
+		log.Printf("received request: %+v", r)
+		log.Printf("received params: %+v", params)
+		handler(w, r, params)
 	}
 }
 
+func newGwMux() *runtime.ServeMux {
+	return runtime.NewServeMux(
+		runtime.WithMiddlewares(Print),
+	)
+}
+
 func main() {
-	startGw()
-	// lis, err := net.Listen("tcp", ":8080")
-	// if err != nil {
-	// 	log.Fatalln("Failed to listen:", err)
-	// }
-
-	// // Create a gRPC server object
-	// s := grpc.NewServer()
-	// // Attach the Greeter service to the server
-	// helloworldpb.RegisterGreeterServer(s, &server{})
-	// // Serve gRPC server
-	// log.Println("Serving gRPC on 0.0.0.0:8080")
-	// go func() {
-	// 	log.Fatalln(s.Serve(lis))
-	// }()
-
-	// // Create a client connection to the gRPC server we just started
-	// // This is where the gRPC-Gateway proxies the requests
-	// conn, err := grpc.NewClient(
-	// 	"0.0.0.0:8080",
-	// 	grpc.WithTransportCredentials(insecure.NewCredentials()),
-	// )
-	// if err != nil {
-	// 	log.Fatalln("Failed to dial server:", err)
-	// }
-
-	// gwmux := runtime.NewServeMux()
-	// // Register Greeter
-	// err = helloworldpb.RegisterGreeterHandler(context.Background(), gwmux, conn)
-	// if err != nil {
-	// 	log.Fatalln("Failed to register gateway:", err)
-	// }
-
-	// gwServer := &http.Server{
-	// 	Addr:    ":8090",
-	// 	Handler: gwmux,
-	// }
-
-	// log.Println("Serving gRPC-Gateway on http://0.0.0.0:8090")
-	// log.Fatalln(gwServer.ListenAndServe())
+	flag.Parse()
+	c, err := conf.LoadConfig(flagconf)
+	if err != nil {
+		log.Fatalf("load config error: %v", err)
+	}
+	s, err := wireApp(c)
+	if err != nil {
+		log.Fatalf("wire app error: %v", err)
+	}
+	s.Start()
+	defer s.Stop()
+	gwServer := &http.Server{
+		Addr:    c.Gateway.Addr,
+		Handler: s.gw,
+	}
+	log.Printf("start gateway server at %s", c.Gateway.Addr)
+	err = gwServer.ListenAndServe()
+	if err != nil {
+		log.Fatalf("failed to start gateway server: %v", err)
+	}
 }

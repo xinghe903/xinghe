@@ -1,0 +1,7 @@
+gateway:
+  addr: ":8090"
+client:
+  auth:
+    addr: "0.0.0.0:9000"
+  comment:
+    addr: "0.0.0.0:9010"
