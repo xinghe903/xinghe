@@ -1,6 +1,9 @@
 package id
 
 import (
+	"fmt"
+	"net"
+	"strings"
 	"sync"
 	"time"
 )
@@ -20,7 +23,12 @@ type Snowflake struct {
 }
 
 // NewSnowflake 函数用于创建一个Snowflake实例
-func NewSnowflake(nodeID int64) *Snowflake {
+// sgin   timestamp    nodeId   sequence
+//
+//	1        41          10        12
+//
+// 符号位1  时间戳41  节点ID10  序号12  1+41+10+12=64位
+func NewSnowflake(dns string) *Snowflake {
 	s := new(Snowflake)
 	s.epoch = 1729321092695 // 初始毫秒  这里是 2024-10-19
 	s.nodeIDBits = 10
@@ -28,11 +36,37 @@ func NewSnowflake(nodeID int64) *Snowflake {
 	s.nodeIDShift = s.sequenceBits
 	s.timestampShift = s.nodeIDBits + s.nodeIDShift
 	s.sequenceMask = -1 ^ (-1 << s.sequenceBits)
-	s.nodeID = nodeID
+	s.nodeID = int64(getLocalIpv4Uint32(dns)) & int64(GetNodeIdByBitCnt(s.nodeIDBits)) // 保留 nodeIDBits 位
+	fmt.Printf("nodeId: %d\n", s.nodeID)
 	s.lastTimestamp = -1
 	s.sequence = 0
 	s.mutex = sync.Mutex{}
 	return s
+}
+
+func getLocalIpv4Uint32(dns string) uint32 {
+	if dns == "" {
+		dns = "8.8.8.8:53"
+	}
+	conn, err := net.Dial("udp", dns)
+	if err != nil {
+		panic(err)
+	}
+	defer conn.Close()
+	addr := conn.LocalAddr().(*net.UDPAddr)
+	ipstr := strings.Split(addr.String(), ":")[0]
+	var ipuint32 uint32 = uint32(addr.IP[0])<<24 | uint32(addr.IP[1])<<16 | uint32(addr.IP[2])<<8 | uint32(addr.IP[3])
+	fmt.Printf("Local IP: %s, uint32: %d\n", ipstr, ipuint32)
+	return ipuint32
+}
+
+func GetNodeIdByBitCnt(bits uint) uint64 {
+	var bnum16 uint64 = 0
+	for bits > 0 {
+		bnum16 = bnum16 | 1<<(bits-1)
+		bits--
+	}
+	return bnum16
 }
 
 // GenerateID 方法用于生成一个全局唯一的ID
