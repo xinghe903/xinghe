@@ -1,11 +1,16 @@
 package biz
 
 import (
-	"auth/internal/biz/jwt"
+	"auth/internal/biz/auth"
+	"auth/internal/biz/auth/token"
 	"auth/internal/biz/po"
 	"auth/internal/biz/repo"
 	"auth/internal/conf"
 	"context"
+	"strconv"
+	"time"
+
+	hashid "github.com/xinghe903/xinghe/pkg/distribute/id"
 
 	authpb "auth/api/auth/v1"
 
@@ -16,14 +21,19 @@ import (
 type AuthUsecase struct {
 	log   *log.Helper
 	uRepo repo.UserRepo
+	aRepo repo.AuthRepo
 	enc   *encrypt.EncryptAes
+	au    auth.Auth
 }
 
-func NewAuthUsecase(c *conf.Config, logger log.Logger, u repo.UserRepo) *AuthUsecase {
+func NewAuthUsecase(c *conf.Config, logger log.Logger, u repo.UserRepo, snow *hashid.Snowflake,
+	aRepo repo.AuthRepo) *AuthUsecase {
 	return &AuthUsecase{
 		log:   log.NewHelper(logger),
 		uRepo: u,
 		enc:   encrypt.NewEncryptAes(c.EncryptKey),
+		au:    token.NewToken(snow, aRepo),
+		aRepo: aRepo,
 	}
 }
 
@@ -42,32 +52,125 @@ func (a *AuthUsecase) Register(ctx context.Context, info *po.User) (string, erro
 		a.log.WithContext(ctx).Errorf("create user: %v", err.Error())
 		return "", authpb.ErrorCreateUser("创建用户失败 %s", info.Name)
 	}
+	user, err := a.uRepo.Get(ctx, id)
+	if err != nil {
+		a.log.WithContext(ctx).Errorf("get user: %v", err.Error())
+		return "", authpb.ErrorCreateUser("创建用户失败 %s", info.Name)
+	}
+	a.aRepo.Create(ctx, &po.Auth{
+		Name:      user.Name,
+		NickName:  user.NickName,
+		Code:      user.InstanceId,
+		Status:    po.StatusUserLogout,
+		ExpiredAt: time.Now(),
+	})
 	return id, nil
 }
 
 func (a *AuthUsecase) Login(ctx context.Context, u *po.User) (string, error) {
 	users, err := a.uRepo.List(ctx, &po.PageQuery[po.User]{Condition: &po.User{Name: u.Name}})
 	if err != nil || len(users.Data) == 0 {
-		a.log.WithContext(ctx).Debugf("用户名错误 %s,  %v", u.Name, err)
+		a.log.WithContext(ctx).Errorf("用户名错误 %s,  %v", u.Name, err)
 		return "", authpb.ErrorUserOrPasswordInvalid("用户名或密码错误")
 	}
 	user := users.Data[0]
 	pdText, err := a.enc.Decrypt(user.Password)
 	if err != nil || pdText != u.Password {
-		a.log.WithContext(ctx).Debugf("密码错误")
+		a.log.WithContext(ctx).Warnf("密码错误")
 		return "", authpb.ErrorUserOrPasswordInvalid("用户名或密码错误")
 	}
-	token := jwt.GenerateToken(user.Name)
+
+	// 检查用户登录状态
+	var authUser *po.Auth
+	if authUsers, err := a.aRepo.List(ctx, &po.PageQuery[po.Auth]{
+		Condition: &po.Auth{Code: user.InstanceId},
+	}); err != nil || authUsers.Total != 1 {
+		message := strconv.FormatInt(authUsers.Total, 10)
+		if err != nil {
+			message = err.Error()
+		}
+		a.log.WithContext(ctx).Errorf("list auth: %v", message)
+		return "", authpb.ErrorLoginError("账号异常")
+	} else {
+		authUser = authUsers.Data[0]
+		if authUser.Status == po.StatusUserLogin {
+			a.log.WithContext(ctx).Infof("用户已登录 %s", user.Name)
+			return "", authpb.ErrorRepeatLogin("重复登录")
+		}
+	}
+	// 生成token
+	token, err := a.au.GenerateToken(user.InstanceId)
+	if err != nil {
+		a.log.WithContext(ctx).Errorf("generate token: %v", err.Error())
+		return "", authpb.ErrorLoginError("生成token失败")
+	}
+	// 更新登录状态
+	authUser.Token = token
+	authUser.Status = po.StatusUserLogin
+	authUser.ExpiredAt = time.Now().Add(time.Minute * 60) // 60分钟过期
+	a.aRepo.Update(ctx, authUser)
 	return token, nil
 }
 
 func (a *AuthUsecase) Logout(ctx context.Context, token string) error {
+	if t := ctx.Value("access_token"); t != "" {
+		token, _ = t.(string)
+	}
+	var authUser *po.Auth
+	if authUsers, err := a.aRepo.List(ctx, &po.PageQuery[po.Auth]{
+		Condition: &po.Auth{Token: token},
+	}); err != nil || authUsers.Total != 1 {
+		message := strconv.FormatInt(authUsers.Total, 10)
+		if err != nil {
+			message = err.Error()
+		}
+		a.log.WithContext(ctx).Errorf("logout auth: %v", message)
+		return authpb.ErrorIllegalToken("非法token %s", token)
+	} else {
+		authUser = authUsers.Data[0]
+	}
+	// 更新登录状态
+	authUser.Status = po.StatusUserLogout
+	a.aRepo.Update(ctx, authUser)
 	return nil
 }
 
 func (a *AuthUsecase) Auth(ctx context.Context, token string) (*po.User, error) {
-	user := jwt.ParseToken(token)
-	return &po.User{
-		Name: user.Name,
-	}, nil
+	if t := ctx.Value("access_token"); t != "" {
+		token, _ = t.(string)
+	}
+
+	var authUser *po.Auth
+	if authUsers, err := a.aRepo.List(ctx, &po.PageQuery[po.Auth]{
+		Condition: &po.Auth{Token: token},
+	}); err != nil || authUsers.Total != 1 {
+		message := strconv.FormatInt(authUsers.Total, 10)
+		if err != nil {
+			message = err.Error()
+		}
+		a.log.WithContext(ctx).Warnf("auth: %v", message)
+		return nil, authpb.ErrorIllegalToken("非法token %s", token)
+	} else {
+		authUser = authUsers.Data[0]
+	}
+	if authUser.ExpiredAt.After(time.Now()) && authUser.Status == po.StatusUserLogin {
+		return &po.User{
+			Name:       authUser.Name,
+			NickName:   authUser.NickName,
+			InstanceId: authUser.Code,
+		}, nil
+	}
+	a.log.WithContext(ctx).Warnf("token is expired %s", token)
+	authUser.Status = po.StatusUserLogout
+	a.aRepo.Update(ctx, authUser)
+	return nil, authpb.ErrorTokenExpired("token已过期")
+}
+
+func (a *AuthUsecase) GetUserById(ctx context.Context, id string) (*po.User, error) {
+	user, err := a.uRepo.Get(ctx, id)
+	if err != nil {
+		a.log.WithContext(ctx).Errorf("get user: %v", err.Error())
+		return nil, authpb.ErrorUserInfo("获取用户信息失败")
+	}
+	return user, nil
 }

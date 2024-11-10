@@ -3,7 +3,7 @@ module auth
 go 1.23.1
 
 require (
-	github.com/go-kratos/kratos/v2 v2.8.0
+	github.com/go-kratos/kratos/v2 v2.8.1
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/google/wire v0.6.0
 	github.com/xinghe903/xinghe/pkg v0.0.0-20241019092623-6ddd6674595f

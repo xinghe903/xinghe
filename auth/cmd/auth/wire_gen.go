@@ -24,13 +24,20 @@ import (
 
 // wireApp init kratos application.
 func wireApp(confServer *conf.Server, confData *conf.Data, config *conf.Config, logger log.Logger) (*kratos.App, func(), error) {
-	dataData, cleanup, err := data.NewData(confData, logger)
+	db, err := data.NewGormClient(confData)
 	if err != nil {
 		return nil, nil, err
 	}
-	userRepo := data.NewUserRepo(confServer, dataData, logger)
-	authUsecase := biz.NewAuthUsecase(config, logger, userRepo)
-	authService := service.NewAuthService(authUsecase, logger)
+	dataData, cleanup, err := data.NewData(confData, db, logger)
+	if err != nil {
+		return nil, nil, err
+	}
+	snowflake := data.NewSnowflake(confServer)
+	userRepo := data.NewUserRepo(confServer, dataData, logger, snowflake)
+	authRepo := data.NewAuthRepo(confServer, dataData, logger, snowflake)
+	authUsecase := biz.NewAuthUsecase(config, logger, userRepo, snowflake, authRepo)
+	rolePermissionUsecase := biz.NewRolePermissionUsecase(config, logger, userRepo)
+	authService := service.NewAuthService(logger, authUsecase, rolePermissionUsecase)
 	grpcServer := server.NewGRPCServer(confServer, authService, logger)
 	httpServer := server.NewHTTPServer(confServer, authService, logger)
 	app := newApp(logger, grpcServer, httpServer)

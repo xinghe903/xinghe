@@ -31,5 +31,5 @@ func (u *Permission) TableName() string {
 }
 
 func (u *Permission) GenerateID(seed int64) string {
-	return hash.GetHashId(seed, permissionPrefixId)
+	return permissionPrefixId + hash.Base32Encode([]int32{int32(seed >> 32), int32(seed)})
 }

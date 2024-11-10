@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/go-kratos/kratos/v2/log"
 	hashid "github.com/xinghe903/xinghe/pkg/distribute/id"
@@ -17,26 +16,22 @@ import (
 var _ repo.PermissionRepo = &permissionRepo{}
 
 type permissionRepo struct {
-	db        *gorm.DB
-	log       *log.Helper
-	builderId *hashid.Snowflake
+	db   *gorm.DB
+	log  *log.Helper
+	snow *hashid.Snowflake
 }
 
-func NewPermissionRepo(c *conf.Server, data *Data, logger log.Logger) repo.PermissionRepo {
-	nodeId, err := strconv.Atoi(c.GetNodeId())
-	if err != nil {
-		panic(err.Error())
-	}
+func NewPermissionRepo(c *conf.Server, data *Data, logger log.Logger, id *hashid.Snowflake) repo.PermissionRepo {
 	return &permissionRepo{
-		db:        data.db,
-		log:       log.NewHelper(logger),
-		builderId: hashid.NewSnowflake(int64(nodeId)),
+		db:   data.db,
+		log:  log.NewHelper(logger),
+		snow: id,
 	}
 }
 
 func (p *permissionRepo) Create(ctx context.Context, source *po.Permission) (string, error) {
 	if len(source.InstanceId) == 0 {
-		source.InstanceId = source.GenerateID(p.builderId.GenerateID())
+		source.InstanceId = source.GenerateID(p.snow.GenerateID())
 	}
 	if err := p.db.Create(source).Error; err != nil {
 		return "", fmt.Errorf("%s create: %s", source.TableName(), err.Error())

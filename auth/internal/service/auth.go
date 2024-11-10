@@ -47,7 +47,8 @@ func (s *AuthService) Login(ctx context.Context, req *authpb.LoginReq) (*authpb.
 }
 
 func (s *AuthService) Logout(ctx context.Context, req *authpb.LogoutReq) (*emptypb.Empty, error) {
-	return nil, nil
+	err := s.uc.Logout(ctx, req.Token)
+	return nil, err
 }
 
 func (s *AuthService) Auth(ctx context.Context, req *authpb.AuthReq) (*authpb.AuthRsp, error) {
@@ -55,7 +56,31 @@ func (s *AuthService) Auth(ctx context.Context, req *authpb.AuthReq) (*authpb.Au
 	if err != nil {
 		return nil, err
 	}
-	return &authpb.AuthRsp{Username: user.Name}, nil
+	return &authpb.AuthRsp{
+		Username: user.Name,
+		Nickname: user.NickName,
+		UserId:   user.InstanceId,
+	}, nil
+}
+
+func (s *AuthService) GetUser(ctx context.Context, req *authpb.GetUserReq) (*authpb.GetUserRsp, error) {
+	if len(req.Id) == 0 {
+		return nil, authpb.ErrorUserOrPasswordEmpty("id不能为空")
+	}
+	user, err := s.uc.GetUserById(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return &authpb.GetUserRsp{
+		Id:        user.InstanceId,
+		Username:  user.Name,
+		Nickname:  user.NickName,
+		CreatedAt: user.CreatedAt.GoString(),
+		UpdatedAt: user.UpdatedAt.GoString(),
+		Email:     user.Email,
+		Phone:     user.Phone,
+		Avatar:    "",
+	}, nil
 }
 
 func (s *AuthService) CreateRole(ctx context.Context, req *authpb.CreateRoleReq) (*emptypb.Empty, error) {

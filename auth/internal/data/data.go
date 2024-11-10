@@ -8,13 +8,15 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
+	hashid "github.com/xinghe903/xinghe/pkg/distribute/id"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewGormClient, NewUserRepo,
-	NewPermissionRepo, NewRolePermissionRepo, NewRoleRepo)
+var ProviderSet = wire.NewSet(NewData, NewSnowflake, NewGormClient, NewUserRepo,
+	NewPermissionRepo, NewRolePermissionRepo, NewRoleRepo, NewAuthRepo)
 
 // Data .
 type Data struct {
@@ -39,7 +41,7 @@ func NewData(c *conf.Data, db *gorm.DB, logger log.Logger) (*Data, func(), error
 }
 
 func checkTable(dbIns *gorm.DB, log *log.Helper) error {
-	entries := []interface{}{&po.User{}}
+	entries := []interface{}{&po.User{}, &po.Auth{}, &po.Role{}, &po.RolePermission{}, &po.Permission{}}
 	for _, it := range entries {
 		action := "创建"
 		if dbIns.Migrator().HasTable(it) {
@@ -60,7 +62,7 @@ func checkTable(dbIns *gorm.DB, log *log.Helper) error {
 	return nil
 }
 
-func NewGormClient(conf *conf.Data, logger log.Logger) (*gorm.DB, error) {
+func NewGormClient(conf *conf.Data) (*gorm.DB, error) {
 	dsn := fmt.Sprintf(`%s:%s@tcp(%s)/%s?charset=utf8&parseTime=%t&loc=%s`,
 		conf.Database.Username,
 		conf.Database.Password,
@@ -68,7 +70,9 @@ func NewGormClient(conf *conf.Data, logger log.Logger) (*gorm.DB, error) {
 		conf.Database.Database,
 		true,
 		"Local")
-	db, err := gorm.Open(mysql.Open(dsn))
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -80,4 +84,8 @@ func NewGormClient(conf *conf.Data, logger log.Logger) (*gorm.DB, error) {
 	sqlDB.SetConnMaxLifetime(conf.Database.MaxConnectionLifeTime.AsDuration())
 	sqlDB.SetMaxIdleConns(int(conf.Database.MaxIdleConnections))
 	return db, nil
+}
+
+func NewSnowflake(c *conf.Server) *hashid.Snowflake {
+	return hashid.NewSnowflake(c.DnsAddr)
 }

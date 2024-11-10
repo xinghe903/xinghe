@@ -6,7 +6,6 @@ import (
 	"comment/internal/conf"
 	"context"
 	"errors"
-	"strconv"
 
 	"github.com/go-kratos/kratos/v2/log"
 	hashid "github.com/xinghe903/xinghe/pkg/distribute/id"
@@ -28,15 +27,11 @@ type commentRepo struct {
 	builderId *hashid.Snowflake
 }
 
-func NewCommentRepo(c *conf.Server, data *Data, logger log.Logger) repo.CommentRepo {
-	nodeId, err := strconv.Atoi(c.GetNodeId())
-	if err != nil {
-		panic(err.Error())
-	}
+func NewCommentRepo(c *conf.Server, data *Data, logger log.Logger, id *hashid.Snowflake) repo.CommentRepo {
 	return &commentRepo{
 		db:        data.db,
 		log:       log.NewHelper(logger),
-		builderId: hashid.NewSnowflake(int64(nodeId)),
+		builderId: id,
 	}
 }
 

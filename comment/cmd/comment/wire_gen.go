@@ -28,7 +28,8 @@ func wireApp(confServer *conf.Server, confData *conf.Data, config *conf.Config, 
 	if err != nil {
 		return nil, nil, err
 	}
-	commentRepo := data.NewCommentRepo(confServer, dataData, logger)
+	snowflake := data.NewSnowflake(confServer)
+	commentRepo := data.NewCommentRepo(confServer, dataData, logger, snowflake)
 	commentUsecase := biz.NewCommentUsecase(config, logger, commentRepo)
 	commentService := service.NewCommentService(commentUsecase, logger)
 	grpcServer := server.NewGRPCServer(confServer, commentService, logger)

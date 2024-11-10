@@ -17,26 +17,22 @@ import (
 var _ repo.UserRepo = &userRepo{}
 
 type userRepo struct {
-	db        *gorm.DB
-	log       *log.Helper
-	builderId *hashid.Snowflake
+	db   *gorm.DB
+	log  *log.Helper
+	snow *hashid.Snowflake
 }
 
-func NewUserRepo(c *conf.Server, data *Data, logger log.Logger) repo.UserRepo {
-	nodeId, err := strconv.Atoi(c.GetNodeId())
-	if err != nil {
-		panic(err.Error())
-	}
+func NewUserRepo(c *conf.Server, data *Data, logger log.Logger, id *hashid.Snowflake) repo.UserRepo {
 	return &userRepo{
-		db:        data.db,
-		log:       log.NewHelper(logger),
-		builderId: hashid.NewSnowflake(int64(nodeId)),
+		db:   data.db,
+		log:  log.NewHelper(logger),
+		snow: id,
 	}
 }
 
 func (p *userRepo) Create(ctx context.Context, source *po.User) (string, error) {
 	if len(source.InstanceId) == 0 {
-		source.InstanceId = source.GenerateID(p.builderId.GenerateID())
+		source.InstanceId = strconv.FormatInt(p.snow.GenerateID(), 10)
 	}
 	if err := p.db.Create(source).Error; err != nil {
 		return "", fmt.Errorf("%s create: %s", source.TableName(), err.Error())

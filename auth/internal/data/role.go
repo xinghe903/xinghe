@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/go-kratos/kratos/v2/log"
 	hashid "github.com/xinghe903/xinghe/pkg/distribute/id"
@@ -17,26 +16,22 @@ import (
 var _ repo.RoleRepo = &roleRepo{}
 
 type roleRepo struct {
-	db        *gorm.DB
-	log       *log.Helper
-	builderId *hashid.Snowflake
+	db   *gorm.DB
+	log  *log.Helper
+	snow *hashid.Snowflake
 }
 
-func NewRoleRepo(c *conf.Server, data *Data, logger log.Logger) repo.RoleRepo {
-	nodeId, err := strconv.Atoi(c.GetNodeId())
-	if err != nil {
-		panic(err.Error())
-	}
+func NewRoleRepo(c *conf.Server, data *Data, logger log.Logger, id *hashid.Snowflake) repo.RoleRepo {
 	return &roleRepo{
-		db:        data.db,
-		log:       log.NewHelper(logger),
-		builderId: hashid.NewSnowflake(int64(nodeId)),
+		db:   data.db,
+		log:  log.NewHelper(logger),
+		snow: id,
 	}
 }
 
 func (p *roleRepo) Create(ctx context.Context, source *po.Role) (string, error) {
 	if len(source.InstanceId) == 0 {
-		source.InstanceId = source.GenerateID(p.builderId.GenerateID())
+		source.InstanceId = source.GenerateID(p.snow.GenerateID())
 	}
 	if err := p.db.Create(source).Error; err != nil {
 		return "", fmt.Errorf("%s create: %s", source.TableName(), err.Error())

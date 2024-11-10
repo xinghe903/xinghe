@@ -260,6 +260,25 @@ paths:
                 "200":
                     description: OK
                     content: {}
+    /auth/user/{id}:
+        get:
+            tags:
+                - AuthService
+            description: 查询用户详情
+            operationId: AuthService_GetUser
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/auth.v1.GetUserRsp'
     /comment/comment:
         post:
             tags:
@@ -303,6 +322,10 @@ components:
             properties:
                 username:
                     type: string
+                nickname:
+                    type: string
+                userId:
+                    type: string
         auth.v1.CreatePermissionReq:
             type: object
             properties:
@@ -326,6 +349,25 @@ components:
                 id:
                     type: string
                 name:
+                    type: string
+        auth.v1.GetUserRsp:
+            type: object
+            properties:
+                id:
+                    type: string
+                username:
+                    type: string
+                email:
+                    type: string
+                phone:
+                    type: string
+                avatar:
+                    type: string
+                createdAt:
+                    type: string
+                updatedAt:
+                    type: string
+                nickname:
                     type: string
         auth.v1.ListPermissionRsp:
             type: object
