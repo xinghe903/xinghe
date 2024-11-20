@@ -18,10 +18,10 @@ var _ repo.RoleRepo = &roleRepo{}
 type roleRepo struct {
 	db   *gorm.DB
 	log  *log.Helper
-	snow *hashid.Snowflake
+	snow *hashid.Sonyflake
 }
 
-func NewRoleRepo(c *conf.Server, data *Data, logger log.Logger, id *hashid.Snowflake) repo.RoleRepo {
+func NewRoleRepo(c *conf.Server, data *Data, logger log.Logger, id *hashid.Sonyflake) repo.RoleRepo {
 	return &roleRepo{
 		db:   data.db,
 		log:  log.NewHelper(logger),

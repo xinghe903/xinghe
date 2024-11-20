@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -41,6 +42,22 @@ func HeaderMiddleware() middleware.Middleware {
 			}
 			rsp, err := handler(ctx, req)
 			return rsp, err
+		}
+	}
+}
+
+func MiddlewareCors() middleware.Middleware {
+	return func(handler middleware.Handler) middleware.Handler {
+		return func(ctx context.Context, req interface{}) (interface{}, error) {
+			fmt.Printf("req %+v\n", req)
+			if ht, ok := transport.FromServerContext(ctx); ok {
+				ht.ReplyHeader().Set("Access-Control-Allow-Origin", "*")
+				ht.ReplyHeader().Set("Access-Control-Allow-Methods", "GET,POST,OPTIONS,PUT,PATCH,DELETE")
+				ht.ReplyHeader().Set("Access-Control-Allow-Credentials", "true")
+				ht.ReplyHeader().Set("Access-Control-Allow-Headers", "Content-Type,"+
+					"X-Requested-With,Access-Control-Allow-Credentials,User-Agent,Content-Length,Authorization")
+			}
+			return handler(ctx, req)
 		}
 	}
 }

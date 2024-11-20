@@ -28,6 +28,6 @@ func (u *Role) TableName() string {
 	return roleTableName
 }
 
-func (u *Role) GenerateID(seed int64) string {
+func (u *Role) GenerateID(seed uint64) string {
 	return rolePrefixId + hash.Base32Encode([]int32{int32(seed >> 32), int32(seed)})
 }

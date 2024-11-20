@@ -21,6 +21,6 @@ func (u *RolePermission) TableName() string {
 	return rolePerTableName
 }
 
-func (u *RolePermission) GenerateID(seed int64) string {
+func (u *RolePermission) GenerateID(seed uint64) string {
 	return rolePerPrefixId + hash.Base32Encode([]int32{int32(seed >> 32), int32(seed)})
 }

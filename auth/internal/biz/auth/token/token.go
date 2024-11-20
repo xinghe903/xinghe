@@ -17,11 +17,11 @@ const (
 )
 
 type Token struct {
-	snow     *hashid.Snowflake
+	snow     *hashid.Sonyflake
 	authRepo repo.AuthRepo
 }
 
-func NewToken(snow *hashid.Snowflake, a repo.AuthRepo) auth.Auth {
+func NewToken(snow *hashid.Sonyflake, a repo.AuthRepo) auth.Auth {
 	return &Token{
 		snow:     snow,
 		authRepo: a,

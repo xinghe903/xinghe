@@ -18,10 +18,10 @@ var _ repo.AuthRepo = &authRepo{}
 type authRepo struct {
 	db   *gorm.DB
 	log  *log.Helper
-	snow *hashid.Snowflake
+	snow *hashid.Sonyflake
 }
 
-func NewAuthRepo(c *conf.Server, data *Data, logger log.Logger, id *hashid.Snowflake) repo.AuthRepo {
+func NewAuthRepo(c *conf.Server, data *Data, logger log.Logger, id *hashid.Sonyflake) repo.AuthRepo {
 	return &authRepo{
 		db:   data.db,
 		log:  log.NewHelper(logger),

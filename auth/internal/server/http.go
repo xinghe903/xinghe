@@ -18,10 +18,15 @@ func NewHTTPServer(c *conf.Server, auth *service.AuthService, logger log.Logger)
 	var opts = []http.ServerOption{
 		http.Middleware(
 			recovery.Recovery(),
+			// middleware.MiddlewareCors(),
 			middleware.LogMiddleware(logger),
 			middleware.HeaderMiddleware(),
 			metadata.Server(),
 		),
+		// http.Filter(handlers.CORS(
+		// 	handlers.AllowedOrigins([]string{"http://172.18.20.117:5173"}),
+		// 	handlers.AllowedMethods([]string{"GET", "POST", "OPTIONS"}),
+		// )),
 	}
 	if c.Http.Network != "" {
 		opts = append(opts, http.Network(c.Http.Network))

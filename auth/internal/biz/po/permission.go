@@ -30,6 +30,6 @@ func (u *Permission) TableName() string {
 	return permissionTableName
 }
 
-func (u *Permission) GenerateID(seed int64) string {
+func (u *Permission) GenerateID(seed uint64) string {
 	return permissionPrefixId + hash.Base32Encode([]int32{int32(seed >> 32), int32(seed)})
 }

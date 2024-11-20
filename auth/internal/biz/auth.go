@@ -26,7 +26,7 @@ type AuthUsecase struct {
 	au    auth.Auth
 }
 
-func NewAuthUsecase(c *conf.Config, logger log.Logger, u repo.UserRepo, snow *hashid.Snowflake,
+func NewAuthUsecase(c *conf.Config, logger log.Logger, u repo.UserRepo, snow *hashid.Sonyflake,
 	aRepo repo.AuthRepo) *AuthUsecase {
 	return &AuthUsecase{
 		log:   log.NewHelper(logger),
@@ -38,7 +38,7 @@ func NewAuthUsecase(c *conf.Config, logger log.Logger, u repo.UserRepo, snow *ha
 }
 
 func (a *AuthUsecase) Register(ctx context.Context, info *po.User) (string, error) {
-	users, err := a.uRepo.List(ctx, &po.PageQuery[po.User]{Condition: &po.User{Name: info.Name}})
+	users, err := a.uRepo.List(ctx, &po.PageQuery[po.User]{Condition: &po.User{Name: info.Name}}, "")
 	if err != nil {
 		a.log.WithContext(ctx).Errorf("list user: %v", err.Error())
 		return "", authpb.ErrorCreateUser("创建用户失败 %s", info.Name)
@@ -68,7 +68,7 @@ func (a *AuthUsecase) Register(ctx context.Context, info *po.User) (string, erro
 }
 
 func (a *AuthUsecase) Login(ctx context.Context, u *po.User) (string, error) {
-	users, err := a.uRepo.List(ctx, &po.PageQuery[po.User]{Condition: &po.User{Name: u.Name}})
+	users, err := a.uRepo.List(ctx, &po.PageQuery[po.User]{Condition: &po.User{Name: u.Name}}, "")
 	if err != nil || len(users.Data) == 0 {
 		a.log.WithContext(ctx).Errorf("用户名错误 %s,  %v", u.Name, err)
 		return "", authpb.ErrorUserOrPasswordInvalid("用户名或密码错误")
@@ -173,4 +173,13 @@ func (a *AuthUsecase) GetUserById(ctx context.Context, id string) (*po.User, err
 		return nil, authpb.ErrorUserInfo("获取用户信息失败")
 	}
 	return user, nil
+}
+
+func (a *AuthUsecase) ListUser(ctx context.Context, cond *po.PageQuery[po.User], username string) (*po.SearchList[po.User], error) {
+	list, err := a.uRepo.List(ctx, cond, username)
+	if err != nil {
+		a.log.WithContext(ctx).Errorf("list user: %v", err.Error())
+		return nil, authpb.ErrorUserInfo("获取用户列表失败")
+	}
+	return list, nil
 }

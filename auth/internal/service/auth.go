@@ -5,6 +5,7 @@ import (
 	"auth/internal/biz"
 	"auth/internal/biz/po"
 	"context"
+	"time"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -75,12 +76,36 @@ func (s *AuthService) GetUser(ctx context.Context, req *authpb.GetUserReq) (*aut
 		Id:        user.InstanceId,
 		Username:  user.Name,
 		Nickname:  user.NickName,
-		CreatedAt: user.CreatedAt.GoString(),
-		UpdatedAt: user.UpdatedAt.GoString(),
-		Email:     user.Email,
-		Phone:     user.Phone,
+		CreatedAt: user.CreatedAt.Format(time.DateTime),
+		UpdatedAt: user.UpdatedAt.Format(time.DateTime),
+		Email:     user.Email.String,
+		Phone:     user.Phone.String,
 		Avatar:    "",
 	}, nil
+}
+
+func (s *AuthService) ListUser(ctx context.Context, req *authpb.ListUserReq) (*authpb.ListUserRsp, error) {
+	result, err := s.uc.ListUser(ctx, &po.PageQuery[po.User]{
+		PageNum:  req.PageNumber,
+		PageSize: req.PageSize,
+	}, req.Username)
+	if err != nil {
+		return nil, err
+	}
+	ret := &authpb.ListUserRsp{Total: int32(result.Total)}
+	for _, user := range result.Data {
+		ret.Users = append(ret.Users, &authpb.User{
+			Id:        user.InstanceId,
+			Username:  user.Name,
+			Nickname:  user.NickName,
+			CreatedAt: user.CreatedAt.Format(time.DateTime),
+			UpdatedAt: user.UpdatedAt.Format(time.DateTime),
+			Email:     user.Email.String,
+			Phone:     user.Phone.String,
+			Avatar:    "",
+		})
+	}
+	return ret, nil
 }
 
 func (s *AuthService) CreateRole(ctx context.Context, req *authpb.CreateRoleReq) (*emptypb.Empty, error) {

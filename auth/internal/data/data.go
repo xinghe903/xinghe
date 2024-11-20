@@ -86,6 +86,6 @@ func NewGormClient(conf *conf.Data) (*gorm.DB, error) {
 	return db, nil
 }
 
-func NewSnowflake(c *conf.Server) *hashid.Snowflake {
-	return hashid.NewSnowflake(c.DnsAddr)
+func NewSnowflake() *hashid.Sonyflake {
+	return hashid.NewSonyflake()
 }

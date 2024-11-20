@@ -32,10 +32,10 @@ func wireApp(confServer *conf.Server, confData *conf.Data, config *conf.Config, 
 	if err != nil {
 		return nil, nil, err
 	}
-	snowflake := data.NewSnowflake(confServer)
-	userRepo := data.NewUserRepo(confServer, dataData, logger, snowflake)
-	authRepo := data.NewAuthRepo(confServer, dataData, logger, snowflake)
-	authUsecase := biz.NewAuthUsecase(config, logger, userRepo, snowflake, authRepo)
+	sonyflake := data.NewSnowflake()
+	userRepo := data.NewUserRepo(confServer, dataData, logger, sonyflake)
+	authRepo := data.NewAuthRepo(confServer, dataData, logger, sonyflake)
+	authUsecase := biz.NewAuthUsecase(config, logger, userRepo, sonyflake, authRepo)
 	rolePermissionUsecase := biz.NewRolePermissionUsecase(config, logger, userRepo)
 	authService := service.NewAuthService(logger, authUsecase, rolePermissionUsecase)
 	grpcServer := server.NewGRPCServer(confServer, authService, logger)

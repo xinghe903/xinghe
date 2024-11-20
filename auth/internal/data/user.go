@@ -19,10 +19,10 @@ var _ repo.UserRepo = &userRepo{}
 type userRepo struct {
 	db   *gorm.DB
 	log  *log.Helper
-	snow *hashid.Snowflake
+	snow *hashid.Sonyflake
 }
 
-func NewUserRepo(c *conf.Server, data *Data, logger log.Logger, id *hashid.Snowflake) repo.UserRepo {
+func NewUserRepo(c *conf.Server, data *Data, logger log.Logger, id *hashid.Sonyflake) repo.UserRepo {
 	return &userRepo{
 		db:   data.db,
 		log:  log.NewHelper(logger),
@@ -32,7 +32,7 @@ func NewUserRepo(c *conf.Server, data *Data, logger log.Logger, id *hashid.Snowf
 
 func (p *userRepo) Create(ctx context.Context, source *po.User) (string, error) {
 	if len(source.InstanceId) == 0 {
-		source.InstanceId = strconv.FormatInt(p.snow.GenerateID(), 10)
+		source.InstanceId = strconv.FormatUint(p.snow.GenerateID(), 10)
 	}
 	if err := p.db.Create(source).Error; err != nil {
 		return "", fmt.Errorf("%s create: %s", source.TableName(), err.Error())
@@ -68,7 +68,7 @@ func (p *userRepo) Delete(ctx context.Context, id string) error {
 	}
 	return nil
 }
-func (p *userRepo) List(ctx context.Context, cond *po.PageQuery[po.User]) (*po.SearchList[po.User], error) {
+func (p *userRepo) List(ctx context.Context, cond *po.PageQuery[po.User], username string) (*po.SearchList[po.User], error) {
 	if cond == nil {
 		return nil, errors.New("condition is required")
 	}
@@ -76,6 +76,9 @@ func (p *userRepo) List(ctx context.Context, cond *po.PageQuery[po.User]) (*po.S
 	md := p.db.Model(cond.Condition)
 	if cond.Condition != nil {
 		md = md.Where(cond.Condition)
+	}
+	if len(username) != 0 {
+		md = md.Where("username like ?", "%"+username+"%")
 	}
 	md = md.Count(&rsp.Total)
 	if cond.PageNum != 0 && cond.PageSize != 0 {

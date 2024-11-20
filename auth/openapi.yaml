@@ -6,7 +6,43 @@ info:
     title: ""
     version: 0.0.1
 paths:
-    /auth/auth:
+    /comment/comment:
+        post:
+            tags:
+                - CommentService
+            operationId: CommentService_CreateComment
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/comment.v1.CreateCommentReq'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/comment.v1.CreateCommentRsp'
+    /comment/comment/{id}:
+        get:
+            tags:
+                - CommentService
+            operationId: CommentService_GetComment
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/comment.v1.GetCommentRsp'
+    /v1/auth/auth:
         get:
             tags:
                 - AuthService
@@ -24,7 +60,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/auth.v1.AuthRsp'
-    /auth/login:
+    /v1/auth/login:
         post:
             tags:
                 - AuthService
@@ -42,7 +78,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/auth.v1.LoginRsp'
-    /auth/logout:
+    /v1/auth/logout:
         post:
             tags:
                 - AuthService
@@ -57,7 +93,7 @@ paths:
                 "200":
                     description: OK
                     content: {}
-    /auth/permission:
+    /v1/auth/permission:
         get:
             tags:
                 - AuthService
@@ -96,7 +132,7 @@ paths:
                 "200":
                     description: OK
                     content: {}
-    /auth/permission/{id}:
+    /v1/auth/permission/{id}:
         get:
             tags:
                 - AuthService
@@ -151,7 +187,7 @@ paths:
                 "200":
                     description: OK
                     content: {}
-    /auth/register:
+    /v1/auth/register:
         post:
             tags:
                 - AuthService
@@ -166,7 +202,7 @@ paths:
                 "200":
                     description: OK
                     content: {}
-    /auth/role:
+    /v1/auth/role:
         get:
             tags:
                 - AuthService
@@ -205,7 +241,7 @@ paths:
                 "200":
                     description: OK
                     content: {}
-    /auth/role/{id}:
+    /v1/auth/role/{id}:
         get:
             tags:
                 - AuthService
@@ -260,7 +296,35 @@ paths:
                 "200":
                     description: OK
                     content: {}
-    /auth/user/{id}:
+    /v1/auth/user:
+        get:
+            tags:
+                - AuthService
+            description: 查询用户列表
+            operationId: AuthService_ListUser
+            parameters:
+                - name: pageNumber
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: username
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/auth.v1.ListUserRsp'
+    /v1/auth/user/{id}:
         get:
             tags:
                 - AuthService
@@ -279,42 +343,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/auth.v1.GetUserRsp'
-    /comment/comment:
-        post:
-            tags:
-                - CommentService
-            operationId: CommentService_CreateComment
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/comment.v1.CreateCommentReq'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/comment.v1.CreateCommentRsp'
-    /comment/comment/{id}:
-        get:
-            tags:
-                - CommentService
-            operationId: CommentService_GetComment
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/comment.v1.GetCommentRsp'
 components:
     schemas:
         auth.v1.AuthRsp:
@@ -389,6 +417,16 @@ components:
                 total:
                     type: integer
                     format: int32
+        auth.v1.ListUserRsp:
+            type: object
+            properties:
+                users:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/auth.v1.User'
+                total:
+                    type: integer
+                    format: int32
         auth.v1.LoginReq:
             type: object
             properties:
@@ -446,6 +484,25 @@ components:
                 id:
                     type: string
                 name:
+                    type: string
+        auth.v1.User:
+            type: object
+            properties:
+                id:
+                    type: string
+                username:
+                    type: string
+                email:
+                    type: string
+                phone:
+                    type: string
+                avatar:
+                    type: string
+                createdAt:
+                    type: string
+                updatedAt:
+                    type: string
+                nickname:
                     type: string
         comment.v1.Comment:
             type: object

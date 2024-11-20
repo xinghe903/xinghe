@@ -18,10 +18,10 @@ var _ repo.PermissionRepo = &permissionRepo{}
 type permissionRepo struct {
 	db   *gorm.DB
 	log  *log.Helper
-	snow *hashid.Snowflake
+	snow *hashid.Sonyflake
 }
 
-func NewPermissionRepo(c *conf.Server, data *Data, logger log.Logger, id *hashid.Snowflake) repo.PermissionRepo {
+func NewPermissionRepo(c *conf.Server, data *Data, logger log.Logger, id *hashid.Sonyflake) repo.PermissionRepo {
 	return &permissionRepo{
 		db:   data.db,
 		log:  log.NewHelper(logger),

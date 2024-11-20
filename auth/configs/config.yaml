@@ -1,5 +1,4 @@
 server:
-  dns: "8.8.8.8:53"
   http:
     addr: 0.0.0.0:8000
     timeout: 1s
@@ -8,10 +7,10 @@ server:
     timeout: 1s
 data:
   database:
-    username: root
-    password: "123456"
-    host: 172.17.89.251:13306
-    database: auth
+    username: mysqladmin
+    password: "developEnv@0417"
+    host: 172.24.161.143:3306
+    database: voice1017
     max_open_connections: 10
     timeout: 10s
     max_idle_connections: 10
@@ -21,3 +20,4 @@ data:
     write_timeout: 0.2s
 config:
   encrypt_key: "jdgD46d7G7ObhwgU"
+  

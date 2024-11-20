@@ -34,6 +34,6 @@ func (u *Auth) TableName() string {
 	return authTableName
 }
 
-func (u *Auth) GenerateID(seed int64) string {
+func (u *Auth) GenerateID(seed uint64) string {
 	return authPrefixId + hash.Base32Encode([]int32{int32(seed >> 32), int32(seed)})
 }

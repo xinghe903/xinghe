@@ -10,7 +10,7 @@ type UserRepo interface {
 	Update(ctx context.Context, source *po.User) error
 	Get(ctx context.Context, id string) (*po.User, error)
 	Delete(ctx context.Context, id string) error
-	List(ctx context.Context, cond *po.PageQuery[po.User]) (*po.SearchList[po.User], error)
+	List(ctx context.Context, cond *po.PageQuery[po.User], username string) (*po.SearchList[po.User], error)
 }
 
 type AuthRepo interface {
