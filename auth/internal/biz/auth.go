@@ -11,6 +11,7 @@ import (
 	"time"
 
 	hashid "github.com/xinghe903/xinghe/pkg/distribute/id"
+	"golang.org/x/exp/rand"
 
 	authpb "auth/api/auth/v1"
 
@@ -182,4 +183,30 @@ func (a *AuthUsecase) ListUser(ctx context.Context, cond *po.PageQuery[po.User],
 		return nil, authpb.ErrorUserInfo("获取用户列表失败")
 	}
 	return list, nil
+}
+
+func (a *AuthUsecase) CreateUser(ctx context.Context, req *po.User) (*po.User, error) {
+	req.Password = RandStringRunes(8) // 生成默认密码  固定长度8位
+	id, err := a.Register(ctx, req)
+	if err != nil {
+		a.log.WithContext(ctx).Errorf("create user: %v", err.Error())
+		return nil, err
+	}
+	rsp, err := a.GetUserById(ctx, id)
+	rsp.Password = req.Password
+	return rsp, nil
+}
+
+func init() {
+	rand.Seed(uint64(time.Now().UnixNano()))
+}
+
+var letterRunes = []rune("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
+
+func RandStringRunes(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
 }

@@ -5,6 +5,7 @@ import (
 	"auth/internal/biz"
 	"auth/internal/biz/po"
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -62,6 +63,32 @@ func (s *AuthService) Auth(ctx context.Context, req *authpb.AuthReq) (*authpb.Au
 		Nickname: user.NickName,
 		UserId:   user.InstanceId,
 	}, nil
+}
+
+func (s *AuthService) CreateUser(ctx context.Context, req *authpb.CreateUserReq) (*authpb.CreateUserRsp, error) {
+	rsp, err := s.uc.CreateUser(ctx, &po.User{
+		Name:     req.Username,
+		NickName: req.Nickname,
+		Email:    sql.NullString{String: req.Email, Valid: true},
+		Phone:    sql.NullString{String: req.Phone, Valid: true},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &authpb.CreateUserRsp{
+		Id:        rsp.InstanceId,
+		Username:  req.Username,
+		Nickname:  req.Nickname,
+		CreatedAt: time.Now().Format(time.DateTime),
+		UpdatedAt: time.Now().Format(time.DateTime),
+		Email:     req.Email,
+		Phone:     req.Phone,
+	}, nil
+}
+
+func (s *AuthService) UpdateUser(ctx context.Context, req *authpb.UpdateUserReq) (*emptypb.Empty, error) {
+
+	return nil, nil
 }
 
 func (s *AuthService) GetUser(ctx context.Context, req *authpb.GetUserReq) (*authpb.GetUserRsp, error) {

@@ -324,6 +324,24 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/auth.v1.ListUserRsp'
+        post:
+            tags:
+                - AuthService
+            description: 创建用户
+            operationId: AuthService_CreateUser
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/auth.v1.CreateUserReq'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/auth.v1.CreateUserRsp'
     /v1/auth/user/{id}:
         get:
             tags:
@@ -343,6 +361,27 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/auth.v1.GetUserRsp'
+        put:
+            tags:
+                - AuthService
+            description: 修改用户
+            operationId: AuthService_UpdateUser
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/auth.v1.UpdateUserReq'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
 components:
     schemas:
         auth.v1.AuthRsp:
@@ -363,6 +402,40 @@ components:
             type: object
             properties:
                 name:
+                    type: string
+        auth.v1.CreateUserReq:
+            type: object
+            properties:
+                username:
+                    type: string
+                email:
+                    type: string
+                phone:
+                    type: string
+                avatar:
+                    type: string
+                nickname:
+                    type: string
+        auth.v1.CreateUserRsp:
+            type: object
+            properties:
+                id:
+                    type: string
+                username:
+                    type: string
+                email:
+                    type: string
+                phone:
+                    type: string
+                avatar:
+                    type: string
+                createdAt:
+                    type: string
+                updatedAt:
+                    type: string
+                nickname:
+                    type: string
+                password:
                     type: string
         auth.v1.GetPermissionRsp:
             type: object
@@ -484,6 +557,25 @@ components:
                 id:
                     type: string
                 name:
+                    type: string
+        auth.v1.UpdateUserReq:
+            type: object
+            properties:
+                id:
+                    type: string
+                username:
+                    type: string
+                email:
+                    type: string
+                phone:
+                    type: string
+                avatar:
+                    type: string
+                createdAt:
+                    type: string
+                updatedAt:
+                    type: string
+                nickname:
                     type: string
         auth.v1.User:
             type: object
