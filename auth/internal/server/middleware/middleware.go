@@ -21,11 +21,11 @@ func LogMiddleware(l log.Logger) middleware.Middleware {
 			if info, ok := transport.FromServerContext(ctx); ok {
 				operation = info.Operation()
 			}
-			logger.WithContext(ctx).Infof("operation: %s, request: %+v\n", operation, req)
+			logger.WithContext(ctx).Debugf("operation: %s, request: %+v\n", operation, req)
 			rsp, err := handler(ctx, req)
 			end := time.Now()
 			latency := end.Sub(start)
-			logger.WithContext(ctx).Infof("latency: %v response %+v\n", latency, rsp)
+			logger.WithContext(ctx).Debugf("latency: %v response %+v\n", latency, rsp)
 			return rsp, err
 		}
 	}

@@ -9,5 +9,5 @@ type PageQuery[T any] struct {
 	PageNum   int32
 	PageSize  int32
 	Condition *T
-	Sort      map[string]string
+	Sort      []map[string]string
 }

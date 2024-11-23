@@ -87,8 +87,13 @@ func (s *AuthService) CreateUser(ctx context.Context, req *authpb.CreateUserReq)
 }
 
 func (s *AuthService) UpdateUser(ctx context.Context, req *authpb.UpdateUserReq) (*emptypb.Empty, error) {
-
-	return nil, nil
+	err := s.uc.UpdateUser(ctx, &po.User{
+		InstanceId: req.Id,
+		NickName:   req.Nickname,
+		Email:      sql.NullString{String: req.Email, Valid: true},
+		Phone:      sql.NullString{String: req.Phone, Valid: true},
+	})
+	return nil, err
 }
 
 func (s *AuthService) GetUser(ctx context.Context, req *authpb.GetUserReq) (*authpb.GetUserRsp, error) {
@@ -136,25 +141,25 @@ func (s *AuthService) ListUser(ctx context.Context, req *authpb.ListUserReq) (*a
 }
 
 func (s *AuthService) CreateRole(ctx context.Context, req *authpb.CreateRoleReq) (*emptypb.Empty, error) {
-	s.rp.CreateRole(ctx, &po.Role{
+	_, err := s.rp.CreateRole(ctx, &po.Role{
 		Name: req.Name,
 	})
-	return nil, nil
+	return nil, err
 }
 
 func (s *AuthService) UpdateRole(ctx context.Context, req *authpb.UpdateRoleReq) (*emptypb.Empty, error) {
-	s.rp.UpdateRole(ctx, &po.Role{
+	err := s.rp.UpdateRole(ctx, &po.Role{
 		InstanceId: req.Id,
 		Name:       req.Name,
 	})
-	return nil, nil
+	return nil, err
 }
 
 func (s *AuthService) DeleteRole(ctx context.Context, req *authpb.DeleteRoleReq) (*emptypb.Empty, error) {
-	s.rp.DeleteRole(ctx, &po.Role{
+	err := s.rp.DeleteRole(ctx, &po.Role{
 		InstanceId: req.Id,
 	})
-	return nil, nil
+	return nil, err
 }
 
 func (s *AuthService) GetRole(ctx context.Context, req *authpb.GetRoleReq) (*authpb.GetRoleRsp, error) {
@@ -184,18 +189,24 @@ func (s *AuthService) ListRole(ctx context.Context, req *authpb.ListRoleReq) (*a
 }
 
 func (s *AuthService) CreatePermission(ctx context.Context, req *authpb.CreatePermissionReq) (*emptypb.Empty, error) {
-	s.rp.CreatePermission(ctx, &po.Permission{})
-	return nil, nil
+	_, err := s.rp.CreatePermission(ctx, &po.Permission{
+		Permission: req.Name,
+		// SubjectType: req,
+	})
+	return nil, err
 }
 
 func (s *AuthService) UpdatePermission(ctx context.Context, req *authpb.UpdatePermissionReq) (*emptypb.Empty, error) {
-	s.rp.UpdatePermission(ctx, &po.Permission{})
-	return nil, nil
+	err := s.rp.UpdatePermission(ctx, &po.Permission{
+		InstanceId: req.Id,
+		Permission: req.Name,
+	})
+	return nil, err
 }
 
 func (s *AuthService) DeletePermission(ctx context.Context, req *authpb.DeletePermissionReq) (*emptypb.Empty, error) {
-	s.rp.DeletePermission(ctx, &po.Permission{})
-	return nil, nil
+	err := s.rp.DeletePermission(ctx, &po.Permission{InstanceId: req.Id})
+	return nil, err
 }
 
 func (s *AuthService) GetPermission(ctx context.Context, req *authpb.GetPermissionReq) (*authpb.GetPermissionRsp, error) {

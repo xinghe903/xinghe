@@ -94,7 +94,7 @@ func (a *AuthUsecase) Login(ctx context.Context, u *po.User) (string, error) {
 		return "", authpb.ErrorLoginError("账号异常")
 	} else {
 		authUser = authUsers.Data[0]
-		if authUser.Status == po.StatusUserLogin {
+		if authUser.ExpiredAt.After(time.Now()) && authUser.Status == po.StatusUserLogin {
 			a.log.WithContext(ctx).Infof("用户已登录 %s", user.Name)
 			return "", authpb.ErrorRepeatLogin("重复登录")
 		}
@@ -177,6 +177,7 @@ func (a *AuthUsecase) GetUserById(ctx context.Context, id string) (*po.User, err
 }
 
 func (a *AuthUsecase) ListUser(ctx context.Context, cond *po.PageQuery[po.User], username string) (*po.SearchList[po.User], error) {
+	cond.Sort = []map[string]string{{"updated_at": "desc"}}
 	list, err := a.uRepo.List(ctx, cond, username)
 	if err != nil {
 		a.log.WithContext(ctx).Errorf("list user: %v", err.Error())
@@ -186,15 +187,35 @@ func (a *AuthUsecase) ListUser(ctx context.Context, cond *po.PageQuery[po.User],
 }
 
 func (a *AuthUsecase) CreateUser(ctx context.Context, req *po.User) (*po.User, error) {
-	req.Password = RandStringRunes(8) // 生成默认密码  固定长度8位
+	textPassword := RandStringRunes(8) // 生成默认密码  固定长度8位
+	req.Password = textPassword
 	id, err := a.Register(ctx, req)
 	if err != nil {
 		a.log.WithContext(ctx).Errorf("create user: %v", err.Error())
 		return nil, err
 	}
 	rsp, err := a.GetUserById(ctx, id)
-	rsp.Password = req.Password
+	rsp.Password = textPassword
 	return rsp, nil
+}
+
+func (a *AuthUsecase) UpdateUser(ctx context.Context, req *po.User) error {
+	err := a.uRepo.Update(ctx, &po.User{
+		InstanceId: req.InstanceId,
+		NickName:   req.NickName,
+		Email:      req.Email,
+		Phone:      req.Phone,
+	})
+	if err != nil {
+		a.log.WithContext(ctx).Errorf("update user: %v", err.Error())
+		return authpb.ErrorUpdateUser("更新用户信息失败")
+	}
+	err = a.aRepo.Update(ctx, &po.Auth{NickName: req.NickName})
+	if err != nil {
+		a.log.WithContext(ctx).Errorf("update user: %v", err.Error())
+		return authpb.ErrorUpdateUser("更新用户信息失败")
+	}
+	return nil
 }
 
 func init() {
