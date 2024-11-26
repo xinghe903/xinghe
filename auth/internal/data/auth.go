@@ -113,7 +113,7 @@ func (p *authRepo) GetByToken(ctx context.Context, token string) (*po.Auth, erro
 }
 
 func (p *authRepo) UpdateByToken(ctx context.Context, source *po.Auth) error {
-	if len(source.Token) == 0 {
+	if len(source.Token.String) == 0 {
 		return errors.New("Token is required")
 	}
 	if err := p.db.Model(&po.Auth{}).Where("token = ?", source.Token).Updates(source).Error; err != nil {
@@ -125,7 +125,7 @@ func (p *authRepo) UpdateByToken(ctx context.Context, source *po.Auth) error {
 func (p *authRepo) ClearExpiredToken(ctx context.Context, date time.Time) error {
 	var source po.Auth
 	if err := p.db.Model(&po.Auth{}).Where("expired_at <= ?", date).Updates(map[string]interface{}{
-		"token":  "",
+		"token":  nil,
 		"status": po.StatusUserLogout,
 	}).Error; err != nil {
 		return fmt.Errorf("%s update: %s", source.TableName(), err.Error())

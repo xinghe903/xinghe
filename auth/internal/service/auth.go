@@ -79,6 +79,7 @@ func (s *AuthService) CreateUser(ctx context.Context, req *authpb.CreateUserReq)
 		Id:        rsp.InstanceId,
 		Username:  req.Username,
 		Nickname:  req.Nickname,
+		Password:  rsp.Password,
 		CreatedAt: time.Now().Format(time.DateTime),
 		UpdatedAt: time.Now().Format(time.DateTime),
 		Email:     req.Email,

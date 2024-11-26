@@ -7,6 +7,7 @@ import (
 	"auth/internal/biz/repo"
 	"auth/internal/conf"
 	"context"
+	"database/sql"
 	"strconv"
 	"time"
 
@@ -82,7 +83,7 @@ func (a *AuthUsecase) Login(ctx context.Context, u *po.User) (string, error) {
 	}
 
 	// 检查用户登录状态
-	var authUser *po.Auth
+	var authUser po.Auth
 	if authUsers, err := a.aRepo.List(ctx, &po.PageQuery[po.Auth]{
 		Condition: &po.Auth{Code: user.InstanceId},
 	}); err != nil || authUsers.Total != 1 {
@@ -102,10 +103,10 @@ func (a *AuthUsecase) Login(ctx context.Context, u *po.User) (string, error) {
 		return "", err
 	}
 	// 更新登录状态
-	authUser.Token = token
+	authUser.Token = sql.NullString{Valid: true, String: token}
 	authUser.Status = po.StatusUserLogin
 	authUser.ExpiredAt = time.Now().Add(time.Minute * 60) // 60分钟过期
-	a.aRepo.Update(ctx, authUser)
+	a.aRepo.Update(ctx, &authUser)
 	return token, nil
 }
 
@@ -119,7 +120,7 @@ func (a *AuthUsecase) generateToken(ctx context.Context, userId string) (string,
 			return "", authpb.ErrorLoginError("生成token失败")
 		}
 		if authUsers, err := a.aRepo.List(ctx, &po.PageQuery[po.Auth]{
-			Condition: &po.Auth{Token: token},
+			Condition: &po.Auth{Token: sql.NullString{Valid: true, String: token}},
 		}); err != nil {
 			a.log.WithContext(ctx).Errorf("query token: %v", err.Error())
 			return "", authpb.ErrorLoginError("生成token失败")
@@ -138,7 +139,7 @@ func (a *AuthUsecase) Logout(ctx context.Context, token string) error {
 	}
 	var authUser *po.Auth
 	if authUsers, err := a.aRepo.List(ctx, &po.PageQuery[po.Auth]{
-		Condition: &po.Auth{Token: token},
+		Condition: &po.Auth{Token: sql.NullString{Valid: true, String: token}},
 	}); err != nil || authUsers.Total != 1 {
 		message := strconv.FormatInt(authUsers.Total, 10)
 		if err != nil {
@@ -162,7 +163,7 @@ func (a *AuthUsecase) Auth(ctx context.Context, token string) (*po.User, error) 
 
 	var authUser *po.Auth
 	if authUsers, err := a.aRepo.List(ctx, &po.PageQuery[po.Auth]{
-		Condition: &po.Auth{Token: token},
+		Condition: &po.Auth{Token: sql.NullString{Valid: true, String: token}},
 	}); err != nil || authUsers.Total != 1 {
 		message := strconv.FormatInt(authUsers.Total, 10)
 		if err != nil {
@@ -214,7 +215,12 @@ func (a *AuthUsecase) CreateUser(ctx context.Context, req *po.User) (*po.User, e
 		return nil, err
 	}
 	rsp, err := a.GetUserById(ctx, id)
+	if err != nil {
+		a.log.WithContext(ctx).Errorf("get user: %v", err.Error())
+		return nil, authpb.ErrorUserInfo("获取用户信息失败")
+	}
 	rsp.Password = textPassword
+	a.log.Debugf("response: %#v", rsp)
 	return rsp, nil
 }
 
