@@ -240,7 +240,10 @@ paths:
             responses:
                 "200":
                     description: OK
-                    content: {}
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/auth.v1.CreateRoleRsp'
     /v1/auth/role/{id}:
         get:
             tags:
@@ -398,10 +401,30 @@ components:
             properties:
                 name:
                     type: string
+                permission:
+                    type: string
+                subjectType:
+                    type: string
+                subjectId:
+                    type: string
+                rootId:
+                    type: string
+                parentId:
+                    type: string
+                sort:
+                    type: integer
+                    format: int32
         auth.v1.CreateRoleReq:
             type: object
             properties:
                 name:
+                    type: string
+        auth.v1.CreateRoleRsp:
+            type: object
+            properties:
+                name:
+                    type: string
+                id:
                     type: string
         auth.v1.CreateUserReq:
             type: object
@@ -440,9 +463,26 @@ components:
         auth.v1.GetPermissionRsp:
             type: object
             properties:
+                name:
+                    type: string
+                permission:
+                    type: string
+                subjectType:
+                    type: string
+                subjectId:
+                    type: string
+                rootId:
+                    type: string
+                parentId:
+                    type: string
+                sort:
+                    type: integer
+                    format: int32
                 id:
                     type: string
-                name:
+                createdAt:
+                    type: string
+                updatedAt:
                     type: string
         auth.v1.GetRoleRsp:
             type: object
@@ -450,6 +490,10 @@ components:
                 id:
                     type: string
                 name:
+                    type: string
+                createdAt:
+                    type: string
+                updatedAt:
                     type: string
         auth.v1.GetUserRsp:
             type: object
@@ -520,16 +564,30 @@ components:
         auth.v1.Permission:
             type: object
             properties:
-                id:
-                    type: string
                 name:
+                    type: string
+                permission:
                     type: string
                 subjectType:
                     type: string
                 subjectId:
                     type: string
-                permission:
+                rootId:
                     type: string
+                parentId:
+                    type: string
+                sort:
+                    type: integer
+                    format: int32
+                id:
+                    type: string
+                createdAt:
+                    type: string
+                updatedAt:
+                    type: string
+                children:
+                    type: integer
+                    format: int32
         auth.v1.RegisterReq:
             type: object
             properties:
@@ -544,12 +602,29 @@ components:
                     type: string
                 name:
                     type: string
+                createdAt:
+                    type: string
+                updatedAt:
+                    type: string
         auth.v1.UpdatePermissionReq:
             type: object
             properties:
-                id:
-                    type: string
                 name:
+                    type: string
+                permission:
+                    type: string
+                subjectType:
+                    type: string
+                subjectId:
+                    type: string
+                rootId:
+                    type: string
+                parentId:
+                    type: string
+                sort:
+                    type: integer
+                    format: int32
+                id:
                     type: string
         auth.v1.UpdateRoleReq:
             type: object

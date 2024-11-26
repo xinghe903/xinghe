@@ -4,7 +4,6 @@ import (
 	"auth/internal/biz/auth"
 	"context"
 	"errors"
-	"strconv"
 
 	"auth/internal/biz/repo"
 
@@ -13,32 +12,29 @@ import (
 )
 
 const (
-	tokenLen = 32
+	tokenLen = 50
 )
 
 type Token struct {
 	snow     *hashid.Sonyflake
 	authRepo repo.AuthRepo
+	randByte *hash.RandomBytes
 }
 
 func NewToken(snow *hashid.Sonyflake, a repo.AuthRepo) auth.Auth {
 	return &Token{
 		snow:     snow,
 		authRepo: a,
+		randByte: hash.NewRandomBytes(),
 	}
 }
 
 func (t *Token) GenerateToken(id string) (string, error) {
-	if len(id) == 0 {
-		return "", errors.New("user id is required")
-	}
-	code, err := strconv.ParseUint(id, 10, 64)
+	bId, err := t.randByte.Generate(tokenLen)
 	if err != nil {
 		return "", errors.Join(errors.New("token generate."), err)
 	}
-	snow := t.snow.GenerateID()
-	token := hash.Base64Encode([]int32{int32(code >> 32), int32(code), int32(snow >> 32), int32(snow)})
-	return token, nil
+	return string(bId), nil
 }
 func (t *Token) ParseToken(token string) (*auth.AuthClaims, error) {
 	if len(token) == 0 {

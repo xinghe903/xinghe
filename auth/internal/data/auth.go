@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/go-kratos/kratos/v2/log"
 	hashid "github.com/xinghe903/xinghe/pkg/distribute/id"
@@ -43,6 +44,15 @@ func (p *authRepo) Update(ctx context.Context, source *po.Auth) error {
 		return errors.New("instance id is required")
 	}
 	if err := p.db.Model(&po.Auth{}).Where("instanceId = ?", source.InstanceId).Updates(source).Error; err != nil {
+		return fmt.Errorf("%s update: %s", source.TableName(), err.Error())
+	}
+	return nil
+}
+func (p *authRepo) UpdateByCode(ctx context.Context, source *po.Auth) error {
+	if len(source.Code) == 0 {
+		return errors.New("code id is required")
+	}
+	if err := p.db.Model(&po.Auth{}).Where("code = ?", source.Code).Updates(source).Error; err != nil {
 		return fmt.Errorf("%s update: %s", source.TableName(), err.Error())
 	}
 	return nil
@@ -107,6 +117,17 @@ func (p *authRepo) UpdateByToken(ctx context.Context, source *po.Auth) error {
 		return errors.New("Token is required")
 	}
 	if err := p.db.Model(&po.Auth{}).Where("token = ?", source.Token).Updates(source).Error; err != nil {
+		return fmt.Errorf("%s update: %s", source.TableName(), err.Error())
+	}
+	return nil
+}
+
+func (p *authRepo) ClearExpiredToken(ctx context.Context, date time.Time) error {
+	var source po.Auth
+	if err := p.db.Model(&po.Auth{}).Where("expired_at <= ?", date).Updates(map[string]interface{}{
+		"token":  "",
+		"status": po.StatusUserLogout,
+	}).Error; err != nil {
 		return fmt.Errorf("%s update: %s", source.TableName(), err.Error())
 	}
 	return nil

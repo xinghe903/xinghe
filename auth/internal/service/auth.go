@@ -140,11 +140,11 @@ func (s *AuthService) ListUser(ctx context.Context, req *authpb.ListUserReq) (*a
 	return ret, nil
 }
 
-func (s *AuthService) CreateRole(ctx context.Context, req *authpb.CreateRoleReq) (*emptypb.Empty, error) {
-	_, err := s.rp.CreateRole(ctx, &po.Role{
+func (s *AuthService) CreateRole(ctx context.Context, req *authpb.CreateRoleReq) (*authpb.CreateRoleRsp, error) {
+	id, err := s.rp.CreateRole(ctx, &po.Role{
 		Name: req.Name,
 	})
-	return nil, err
+	return &authpb.CreateRoleRsp{Id: id, Name: req.Name}, err
 }
 
 func (s *AuthService) UpdateRole(ctx context.Context, req *authpb.UpdateRoleReq) (*emptypb.Empty, error) {
@@ -183,23 +183,39 @@ func (s *AuthService) ListRole(ctx context.Context, req *authpb.ListRoleReq) (*a
 	}
 	ret := &authpb.ListRoleRsp{Total: int32(result.Total)}
 	for _, r := range result.Data {
-		ret.Roles = append(ret.Roles, &authpb.Role{Id: r.InstanceId, Name: r.Name})
+		ret.Roles = append(ret.Roles, &authpb.Role{
+			Id:        r.InstanceId,
+			Name:      r.Name,
+			UpdatedAt: r.UpdatedAt.Format(time.DateTime),
+			CreatedAt: r.CreatedAt.Format(time.DateTime),
+		})
 	}
 	return ret, nil
 }
 
 func (s *AuthService) CreatePermission(ctx context.Context, req *authpb.CreatePermissionReq) (*emptypb.Empty, error) {
 	_, err := s.rp.CreatePermission(ctx, &po.Permission{
-		Permission: req.Name,
-		// SubjectType: req,
+		Permission:  req.Permission,
+		SubjectType: po.NewPermissionType(req.SubjectType),
+		SubjectId:   req.SubjectId,
+		RootId:      req.RootId,
+		ParentId:    req.ParentId,
+		Name:        req.Name,
+		Sort:        req.Sort,
 	})
 	return nil, err
 }
 
 func (s *AuthService) UpdatePermission(ctx context.Context, req *authpb.UpdatePermissionReq) (*emptypb.Empty, error) {
 	err := s.rp.UpdatePermission(ctx, &po.Permission{
-		InstanceId: req.Id,
-		Permission: req.Name,
+		InstanceId:  req.Id,
+		Permission:  req.Permission,
+		SubjectType: po.NewPermissionType(req.SubjectType),
+		SubjectId:   req.SubjectId,
+		RootId:      req.RootId,
+		ParentId:    req.ParentId,
+		Name:        req.Name,
+		Sort:        req.Sort,
 	})
 	return nil, err
 }
@@ -215,8 +231,16 @@ func (s *AuthService) GetPermission(ctx context.Context, req *authpb.GetPermissi
 		return nil, err
 	}
 	return &authpb.GetPermissionRsp{
-		Id:   permission.InstanceId,
-		Name: permission.Permission,
+		Id:          permission.InstanceId,
+		Name:        permission.Name,
+		SubjectType: string(permission.SubjectType),
+		SubjectId:   permission.SubjectId,
+		RootId:      permission.RootId,
+		ParentId:    permission.ParentId,
+		Sort:        permission.Sort,
+		Permission:  permission.Permission,
+		CreatedAt:   permission.CreatedAt.Format(time.DateTime),
+		UpdatedAt:   permission.UpdatedAt.Format(time.DateTime),
 	}, nil
 }
 
@@ -226,8 +250,20 @@ func (s *AuthService) ListPermission(ctx context.Context, req *authpb.ListPermis
 		return nil, err
 	}
 	ret := &authpb.ListPermissionRsp{Total: int32(result.Total)}
-	for _, p := range result.Data {
-		ret.Permissions = append(ret.Permissions, &authpb.Permission{Id: p.InstanceId, Permission: p.Permission})
+	for _, permission := range result.Data {
+		ret.Permissions = append(ret.Permissions, &authpb.Permission{
+			Id:          permission.InstanceId,
+			Name:        permission.Name,
+			SubjectType: string(permission.SubjectType),
+			SubjectId:   permission.SubjectId,
+			RootId:      permission.RootId,
+			ParentId:    permission.ParentId,
+			Sort:        permission.Sort,
+			Permission:  permission.Permission,
+			CreatedAt:   permission.CreatedAt.Format(time.DateTime),
+			UpdatedAt:   permission.UpdatedAt.Format(time.DateTime),
+			Children:    permission.Children,
+		})
 	}
 	return ret, nil
 }

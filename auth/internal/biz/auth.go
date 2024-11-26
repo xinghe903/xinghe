@@ -92,18 +92,14 @@ func (a *AuthUsecase) Login(ctx context.Context, u *po.User) (string, error) {
 		}
 		a.log.WithContext(ctx).Errorf("list auth: %v", message)
 		return "", authpb.ErrorLoginError("账号异常")
-	} else {
-		authUser = authUsers.Data[0]
-		if authUser.ExpiredAt.After(time.Now()) && authUser.Status == po.StatusUserLogin {
-			a.log.WithContext(ctx).Infof("用户已登录 %s", user.Name)
-			return "", authpb.ErrorRepeatLogin("重复登录")
-		}
 	}
+	// 用户可以覆盖登录
+	// 清空过期token
+	a.aRepo.ClearExpiredToken(ctx, time.Now())
 	// 生成token
-	token, err := a.au.GenerateToken(user.InstanceId)
+	token, err := a.generateToken(ctx, user.InstanceId)
 	if err != nil {
-		a.log.WithContext(ctx).Errorf("generate token: %v", err.Error())
-		return "", authpb.ErrorLoginError("生成token失败")
+		return "", err
 	}
 	// 更新登录状态
 	authUser.Token = token
@@ -111,6 +107,29 @@ func (a *AuthUsecase) Login(ctx context.Context, u *po.User) (string, error) {
 	authUser.ExpiredAt = time.Now().Add(time.Minute * 60) // 60分钟过期
 	a.aRepo.Update(ctx, authUser)
 	return token, nil
+}
+
+func (a *AuthUsecase) generateToken(ctx context.Context, userId string) (string, error) {
+	retry := 10
+	for i := 0; i < retry; i++ {
+		// 生成token
+		token, err := a.au.GenerateToken(userId)
+		if err != nil {
+			a.log.WithContext(ctx).Errorf("generate token: %v", err.Error())
+			return "", authpb.ErrorLoginError("生成token失败")
+		}
+		if authUsers, err := a.aRepo.List(ctx, &po.PageQuery[po.Auth]{
+			Condition: &po.Auth{Token: token},
+		}); err != nil {
+			a.log.WithContext(ctx).Errorf("query token: %v", err.Error())
+			return "", authpb.ErrorLoginError("生成token失败")
+		} else if authUsers.Total > 0 {
+			continue
+		}
+		return token, nil
+	}
+	a.log.WithContext(ctx).Errorf("generate token failed retry count: %d", retry)
+	return "", authpb.ErrorLoginError("生成token失败")
 }
 
 func (a *AuthUsecase) Logout(ctx context.Context, token string) error {
@@ -210,7 +229,7 @@ func (a *AuthUsecase) UpdateUser(ctx context.Context, req *po.User) error {
 		a.log.WithContext(ctx).Errorf("update user: %v", err.Error())
 		return authpb.ErrorUpdateUser("更新用户信息失败")
 	}
-	err = a.aRepo.Update(ctx, &po.Auth{NickName: req.NickName})
+	err = a.aRepo.UpdateByCode(ctx, &po.Auth{Code: req.InstanceId, NickName: req.NickName})
 	if err != nil {
 		a.log.WithContext(ctx).Errorf("update user: %v", err.Error())
 		return authpb.ErrorUpdateUser("更新用户信息失败")

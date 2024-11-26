@@ -3,6 +3,7 @@ package repo
 import (
 	"auth/internal/biz/po"
 	"context"
+	"time"
 )
 
 type UserRepo interface {
@@ -16,11 +17,13 @@ type UserRepo interface {
 type AuthRepo interface {
 	Create(ctx context.Context, source *po.Auth) (string, error)
 	Update(ctx context.Context, source *po.Auth) error
+	UpdateByCode(ctx context.Context, source *po.Auth) error
 	Get(ctx context.Context, id string) (*po.Auth, error)
 	Delete(ctx context.Context, id string) error
 	List(ctx context.Context, cond *po.PageQuery[po.Auth]) (*po.SearchList[po.Auth], error)
 	GetByToken(ctx context.Context, token string) (*po.Auth, error)
 	UpdateByToken(ctx context.Context, source *po.Auth) error
+	ClearExpiredToken(ctx context.Context, date time.Time) error
 }
 
 type PermissionRepo interface {
