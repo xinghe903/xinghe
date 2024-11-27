@@ -90,3 +90,28 @@ func (p *rolePermissionRepo) List(ctx context.Context, cond *po.PageQuery[po.Rol
 	}
 	return &rsp, nil
 }
+
+func (p *rolePermissionRepo) CoverRelations(ctx context.Context, id string, data []string) error {
+	if len(id) == 0 || len(data) == 0 {
+		return nil
+	}
+	var datas []*po.RolePermission
+	for _, d := range data {
+		datas = append(datas, &po.RolePermission{
+			InstanceId:   id,
+			PermissionId: d,
+		})
+	}
+	if err := p.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("roleId = ? ", id).Delete(&po.RolePermission{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Create(datas).Error; err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return fmt.Errorf("cover relations: %s", err.Error())
+	}
+	return nil
+}

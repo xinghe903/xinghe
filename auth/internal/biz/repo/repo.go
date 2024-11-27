@@ -48,4 +48,5 @@ type RolePermissionRepo interface {
 	Get(ctx context.Context, id string) (*po.RolePermission, error)
 	Delete(ctx context.Context, id string) error
 	List(ctx context.Context, cond *po.PageQuery[po.RolePermission]) (*po.SearchList[po.RolePermission], error)
+	CoverRelations(ctx context.Context, id string, data []string) error
 }

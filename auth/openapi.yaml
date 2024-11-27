@@ -110,6 +110,10 @@ paths:
                   schema:
                     type: integer
                     format: int32
+                - name: parentId
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
@@ -299,6 +303,41 @@ paths:
                 "200":
                     description: OK
                     content: {}
+    /v1/auth/rolePermission:
+        put:
+            tags:
+                - AuthService
+            description: 更新角色权限关联关系
+            operationId: AuthService_UpdateRolePermission
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/auth.v1.UpdateRolePermissionReq'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /v1/auth/rolePermission/{roleId}:
+        get:
+            tags:
+                - AuthService
+            description: 查询角色权限关联关系
+            operationId: AuthService_ListRolePermission
+            parameters:
+                - name: roleId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/auth.v1.ListRolePermissionRsp'
     /v1/auth/user:
         get:
             tags:
@@ -524,6 +563,15 @@ components:
                 total:
                     type: integer
                     format: int32
+        auth.v1.ListRolePermissionRsp:
+            type: object
+            properties:
+                permissionIds:
+                    type: array
+                    items:
+                        type: string
+                roleId:
+                    type: string
         auth.v1.ListRoleRsp:
             type: object
             properties:
@@ -625,6 +673,15 @@ components:
                     type: integer
                     format: int32
                 id:
+                    type: string
+        auth.v1.UpdateRolePermissionReq:
+            type: object
+            properties:
+                permissionIds:
+                    type: array
+                    items:
+                        type: string
+                roleId:
                     type: string
         auth.v1.UpdateRoleReq:
             type: object

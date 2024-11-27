@@ -246,7 +246,9 @@ func (s *AuthService) GetPermission(ctx context.Context, req *authpb.GetPermissi
 }
 
 func (s *AuthService) ListPermission(ctx context.Context, req *authpb.ListPermissionReq) (*authpb.ListPermissionRsp, error) {
-	result, err := s.rp.ListPermission(ctx, &po.PageQuery[po.Permission]{})
+	result, err := s.rp.ListPermission(ctx, &po.PageQuery[po.Permission]{
+		Condition: &po.Permission{ParentId: req.ParentId},
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -267,4 +269,30 @@ func (s *AuthService) ListPermission(ctx context.Context, req *authpb.ListPermis
 		})
 	}
 	return ret, nil
+}
+
+func (s *AuthService) ListRolePermission(ctx context.Context, req *authpb.ListRolePermissionReq) (*authpb.ListRolePermissionRsp, error) {
+	roleId := req.RoleId
+	if len(roleId) == 0 {
+		return nil, authpb.ErrorParameter("参数校验错误。roleId is %s", roleId)
+	}
+	permissionIds, err := s.rp.ListRolePermissions(ctx, roleId)
+	if err != nil {
+		return nil, err
+	}
+	return &authpb.ListRolePermissionRsp{
+		PermissionIds: permissionIds,
+		RoleId:        roleId,
+	}, nil
+}
+
+func (s *AuthService) UpdateRolePermission(ctx context.Context, req *authpb.UpdateRolePermissionReq) (*emptypb.Empty, error) {
+	roleId, permissionIds := req.RoleId, req.PermissionIds
+	if len(roleId) == 0 {
+		return nil, authpb.ErrorParameter("参数校验错误。roleId is %s", roleId)
+	}
+	if len(permissionIds) == 0 {
+		return nil, authpb.ErrorParameter("参数校验错误。permissionIds is %s", permissionIds)
+	}
+	return nil, s.rp.UpdateRolePermissions(ctx, roleId, permissionIds)
 }
