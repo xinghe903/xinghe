@@ -3,18 +3,19 @@ package biz
 import (
 	"auth/internal/biz/auth"
 	"auth/internal/biz/auth/token"
-	"auth/internal/biz/po"
 	"auth/internal/biz/repo"
 	"auth/internal/conf"
+	"auth/internal/data/po"
 	"context"
 	"database/sql"
 	"strconv"
 	"time"
 
+	authpb "auth/api/auth/v1"
+
+	"github.com/xinghe903/xinghe/pkg/bo"
 	hashid "github.com/xinghe903/xinghe/pkg/distribute/id"
 	"golang.org/x/exp/rand"
-
-	authpb "auth/api/auth/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/xinghe903/xinghe/pkg/encrypt"
@@ -40,7 +41,7 @@ func NewAuthUsecase(c *conf.Config, logger log.Logger, u repo.UserRepo, snow *ha
 }
 
 func (a *AuthUsecase) Register(ctx context.Context, info *po.User) (string, error) {
-	users, err := a.uRepo.List(ctx, &po.PageQuery[po.User]{Condition: &po.User{Name: info.Name}}, "")
+	users, err := a.uRepo.List(ctx, &bo.PageQuery[po.User]{Condition: &po.User{Name: info.Name}}, "")
 	if err != nil {
 		a.log.WithContext(ctx).Errorf("list user: %v", err.Error())
 		return "", authpb.ErrorCreateUser("创建用户失败 %s", info.Name)
@@ -70,7 +71,7 @@ func (a *AuthUsecase) Register(ctx context.Context, info *po.User) (string, erro
 }
 
 func (a *AuthUsecase) Login(ctx context.Context, u *po.User) (string, error) {
-	users, err := a.uRepo.List(ctx, &po.PageQuery[po.User]{Condition: &po.User{Name: u.Name}}, "")
+	users, err := a.uRepo.List(ctx, &bo.PageQuery[po.User]{Condition: &po.User{Name: u.Name}}, "")
 	if err != nil || len(users.Data) == 0 {
 		a.log.WithContext(ctx).Errorf("用户名错误 %s,  %v", u.Name, err)
 		return "", authpb.ErrorUserOrPasswordInvalid("用户名或密码错误")
@@ -84,7 +85,7 @@ func (a *AuthUsecase) Login(ctx context.Context, u *po.User) (string, error) {
 
 	// 检查用户登录状态
 	var authUser po.Auth
-	if authUsers, err := a.aRepo.List(ctx, &po.PageQuery[po.Auth]{
+	if authUsers, err := a.aRepo.List(ctx, &bo.PageQuery[po.Auth]{
 		Condition: &po.Auth{Code: user.InstanceId},
 	}); err != nil || authUsers.Total != 1 {
 		message := strconv.FormatInt(authUsers.Total, 10)
@@ -119,7 +120,7 @@ func (a *AuthUsecase) generateToken(ctx context.Context, userId string) (string,
 			a.log.WithContext(ctx).Errorf("generate token: %v", err.Error())
 			return "", authpb.ErrorLoginError("生成token失败")
 		}
-		if authUsers, err := a.aRepo.List(ctx, &po.PageQuery[po.Auth]{
+		if authUsers, err := a.aRepo.List(ctx, &bo.PageQuery[po.Auth]{
 			Condition: &po.Auth{Token: sql.NullString{Valid: true, String: token}},
 		}); err != nil {
 			a.log.WithContext(ctx).Errorf("query token: %v", err.Error())
@@ -138,7 +139,7 @@ func (a *AuthUsecase) Logout(ctx context.Context, token string) error {
 		token, _ = t.(string)
 	}
 	var authUser *po.Auth
-	if authUsers, err := a.aRepo.List(ctx, &po.PageQuery[po.Auth]{
+	if authUsers, err := a.aRepo.List(ctx, &bo.PageQuery[po.Auth]{
 		Condition: &po.Auth{Token: sql.NullString{Valid: true, String: token}},
 	}); err != nil || authUsers.Total != 1 {
 		message := strconv.FormatInt(authUsers.Total, 10)
@@ -162,7 +163,7 @@ func (a *AuthUsecase) Auth(ctx context.Context, token string) (*po.User, error) 
 	}
 
 	var authUser *po.Auth
-	if authUsers, err := a.aRepo.List(ctx, &po.PageQuery[po.Auth]{
+	if authUsers, err := a.aRepo.List(ctx, &bo.PageQuery[po.Auth]{
 		Condition: &po.Auth{Token: sql.NullString{Valid: true, String: token}},
 	}); err != nil || authUsers.Total != 1 {
 		message := strconv.FormatInt(authUsers.Total, 10)
@@ -196,7 +197,7 @@ func (a *AuthUsecase) GetUserById(ctx context.Context, id string) (*po.User, err
 	return user, nil
 }
 
-func (a *AuthUsecase) ListUser(ctx context.Context, cond *po.PageQuery[po.User], username string) (*po.SearchList[po.User], error) {
+func (a *AuthUsecase) ListUser(ctx context.Context, cond *bo.PageQuery[po.User], username string) (*bo.SearchList[po.User], error) {
 	cond.Sort = []map[string]string{{"updated_at": "desc"}}
 	list, err := a.uRepo.List(ctx, cond, username)
 	if err != nil {

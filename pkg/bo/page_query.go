@@ -1,4 +1,4 @@
-package po
+package bo
 
 type SearchList[T any] struct {
 	Total int64

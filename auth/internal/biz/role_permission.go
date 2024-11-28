@@ -2,12 +2,13 @@ package biz
 
 import (
 	authpb "auth/api/auth/v1"
-	"auth/internal/biz/po"
 	"auth/internal/biz/repo"
 	"auth/internal/conf"
+	"auth/internal/data/po"
 	"context"
 
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/xinghe903/xinghe/pkg/bo"
 )
 
 type RolePermissionUsecase struct {
@@ -63,7 +64,7 @@ func (a *RolePermissionUsecase) GetRole(ctx context.Context, id string) (*po.Rol
 	return role, nil
 }
 
-func (a *RolePermissionUsecase) ListRole(ctx context.Context, cond *po.PageQuery[po.Role]) (*po.SearchList[po.Role], error) {
+func (a *RolePermissionUsecase) ListRole(ctx context.Context, cond *bo.PageQuery[po.Role]) (*bo.SearchList[po.Role], error) {
 	cond.Sort = []map[string]string{{"updated_at": "desc"}}
 	list, err := a.rRepo.List(ctx, cond)
 	if err != nil {
@@ -119,7 +120,7 @@ func (a *RolePermissionUsecase) GetPermission(ctx context.Context, id string) (*
 	return permission, nil
 }
 
-func (a *RolePermissionUsecase) ListPermission(ctx context.Context, cond *po.PageQuery[po.Permission]) (*po.SearchList[po.Permission], error) {
+func (a *RolePermissionUsecase) ListPermission(ctx context.Context, cond *bo.PageQuery[po.Permission]) (*bo.SearchList[po.Permission], error) {
 	cond.Sort = []map[string]string{{"sort": "asc"}, {"updated_at": "desc"}}
 	list, err := a.pRepo.List(ctx, cond)
 	if err != nil {
@@ -130,7 +131,7 @@ func (a *RolePermissionUsecase) ListPermission(ctx context.Context, cond *po.Pag
 }
 
 func (a *RolePermissionUsecase) ListRolePermissions(ctx context.Context, roleId string) ([]string, error) {
-	list, err := a.rpRepo.List(ctx, &po.PageQuery[po.RolePermission]{
+	list, err := a.rpRepo.List(ctx, &bo.PageQuery[po.RolePermission]{
 		Condition: &po.RolePermission{RoleId: roleId},
 	})
 	if err != nil {

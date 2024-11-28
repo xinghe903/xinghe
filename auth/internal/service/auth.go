@@ -3,12 +3,13 @@ package service
 import (
 	authpb "auth/api/auth/v1"
 	"auth/internal/biz"
-	"auth/internal/biz/po"
+	"auth/internal/data/po"
 	"context"
 	"database/sql"
 	"time"
 
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/xinghe903/xinghe/pkg/bo"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -118,7 +119,7 @@ func (s *AuthService) GetUser(ctx context.Context, req *authpb.GetUserReq) (*aut
 }
 
 func (s *AuthService) ListUser(ctx context.Context, req *authpb.ListUserReq) (*authpb.ListUserRsp, error) {
-	result, err := s.uc.ListUser(ctx, &po.PageQuery[po.User]{
+	result, err := s.uc.ListUser(ctx, &bo.PageQuery[po.User]{
 		PageNum:  req.PageNumber,
 		PageSize: req.PageSize,
 	}, req.Username)
@@ -175,7 +176,7 @@ func (s *AuthService) GetRole(ctx context.Context, req *authpb.GetRoleReq) (*aut
 }
 
 func (s *AuthService) ListRole(ctx context.Context, req *authpb.ListRoleReq) (*authpb.ListRoleRsp, error) {
-	result, err := s.rp.ListRole(ctx, &po.PageQuery[po.Role]{
+	result, err := s.rp.ListRole(ctx, &bo.PageQuery[po.Role]{
 		PageNum:  req.PageNumber,
 		PageSize: req.PageSize,
 	})
@@ -246,7 +247,7 @@ func (s *AuthService) GetPermission(ctx context.Context, req *authpb.GetPermissi
 }
 
 func (s *AuthService) ListPermission(ctx context.Context, req *authpb.ListPermissionReq) (*authpb.ListPermissionRsp, error) {
-	result, err := s.rp.ListPermission(ctx, &po.PageQuery[po.Permission]{
+	result, err := s.rp.ListPermission(ctx, &bo.PageQuery[po.Permission]{
 		Condition: &po.Permission{ParentId: req.ParentId},
 	})
 	if err != nil {

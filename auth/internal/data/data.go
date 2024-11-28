@@ -4,7 +4,7 @@ import (
 	"auth/internal/conf"
 	"fmt"
 
-	"auth/internal/biz/po"
+	"auth/internal/data/po"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"

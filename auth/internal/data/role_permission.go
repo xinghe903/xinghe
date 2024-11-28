@@ -1,12 +1,14 @@
 package data
 
 import (
-	"auth/internal/biz/po"
 	"auth/internal/biz/repo"
 	"auth/internal/conf"
+	"auth/internal/data/po"
 	"context"
 	"errors"
 	"fmt"
+
+	"github.com/xinghe903/xinghe/pkg/bo"
 
 	"github.com/go-kratos/kratos/v2/log"
 	hashid "github.com/xinghe903/xinghe/pkg/distribute/id"
@@ -67,11 +69,11 @@ func (p *rolePermissionRepo) Delete(ctx context.Context, id string) error {
 	}
 	return nil
 }
-func (p *rolePermissionRepo) List(ctx context.Context, cond *po.PageQuery[po.RolePermission]) (*po.SearchList[po.RolePermission], error) {
+func (p *rolePermissionRepo) List(ctx context.Context, cond *bo.PageQuery[po.RolePermission]) (*bo.SearchList[po.RolePermission], error) {
 	if cond == nil {
 		return nil, errors.New("condition is required")
 	}
-	var rsp po.SearchList[po.RolePermission]
+	var rsp bo.SearchList[po.RolePermission]
 	md := p.db.Model(cond.Condition)
 	if cond.Condition != nil {
 		md = md.Where(cond.Condition)
