@@ -98,14 +98,16 @@ func (p *rolePermissionRepo) CoverRelations(ctx context.Context, id string, data
 		return nil
 	}
 	var datas []*po.RolePermission
+	source := &po.RolePermission{}
 	for _, d := range data {
 		datas = append(datas, &po.RolePermission{
-			InstanceId:   id,
+			InstanceId:   source.GenerateID(p.snow.GenerateID()),
 			PermissionId: d,
+			RoleId:       id,
 		})
 	}
 	if err := p.db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Where("roleId = ? ", id).Delete(&po.RolePermission{}).Error; err != nil {
+		if err := tx.Where("roleId = ? ", id).Delete(source).Error; err != nil {
 			return err
 		}
 		if err := tx.Create(datas).Error; err != nil {
