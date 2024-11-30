@@ -7,9 +7,9 @@ server:
     timeout: 1s
 data:
   database:
-    username: mysqladmin
-    password: "developEnv@0417"
-    host: 172.24.161.143:3306
+    username: root
+    password: "123456"
+    host: localhost:3306
     database: voice1017
     max_open_connections: 10
     timeout: 10s
