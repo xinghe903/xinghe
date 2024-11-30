@@ -6,7 +6,7 @@ require (
 	github.com/go-kratos/kratos/v2 v2.8.1
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/google/wire v0.6.0
-	github.com/xinghe903/xinghe/pkg v0.0.0-20241019092623-6ddd6674595f
+	github.com/xinghe903/xinghe/pkg v0.0.0-20241130004952-7fc89ad0e9d1
 	go.uber.org/automaxprocs v1.5.1
 	golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f
 	google.golang.org/genproto/googleapis/api v0.0.0-20240528184218-531527333157
@@ -29,6 +29,7 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/kr/text v0.2.0 // indirect
+	github.com/sony/sonyflake v1.2.0 // indirect
 	github.com/speps/go-hashids/v2 v2.0.1 // indirect
 	go.opentelemetry.io/otel v1.24.0 // indirect
 	go.opentelemetry.io/otel/metric v1.24.0 // indirect

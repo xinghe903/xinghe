@@ -114,6 +114,10 @@ paths:
                   in: query
                   schema:
                     type: string
+                - name: subjectType
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
@@ -424,6 +428,41 @@ paths:
                 "200":
                     description: OK
                     content: {}
+    /v1/auth/userRole:
+        put:
+            tags:
+                - AuthService
+            description: 更新用户角色关联关系
+            operationId: AuthService_UpdateUserRole
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/auth.v1.UpdateUserRoleReq'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /v1/auth/userRole/{userId}:
+        get:
+            tags:
+                - AuthService
+            description: 查询用户角色关联关系
+            operationId: AuthService_ListUserRole
+            parameters:
+                - name: userId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/auth.v1.ListUserRoleRsp'
 components:
     schemas:
         auth.v1.AuthRsp:
@@ -582,6 +621,15 @@ components:
                 total:
                     type: integer
                     format: int32
+        auth.v1.ListUserRoleRsp:
+            type: object
+            properties:
+                roleIds:
+                    type: array
+                    items:
+                        type: string
+                userId:
+                    type: string
         auth.v1.ListUserRsp:
             type: object
             properties:
@@ -708,6 +756,15 @@ components:
                 updatedAt:
                     type: string
                 nickname:
+                    type: string
+        auth.v1.UpdateUserRoleReq:
+            type: object
+            properties:
+                roleIds:
+                    type: array
+                    items:
+                        type: string
+                userId:
                     type: string
         auth.v1.User:
             type: object

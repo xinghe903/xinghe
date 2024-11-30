@@ -27,3 +27,4 @@ go.work.sum
 apitest
 .idea
 bak
+*config.yaml

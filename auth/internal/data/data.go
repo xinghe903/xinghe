@@ -16,7 +16,8 @@ import (
 
 // ProviderSet is data providers.
 var ProviderSet = wire.NewSet(NewData, NewSnowflake, NewGormClient, NewUserRepo,
-	NewPermissionRepo, NewRolePermissionRepo, NewRoleRepo, NewAuthRepo)
+	NewPermissionRepo, NewRolePermissionRepo, NewRoleRepo, NewAuthRepo, NewUserRoleRepo,
+)
 
 // Data .
 type Data struct {

@@ -52,3 +52,12 @@ type RolePermissionRepo interface {
 	List(ctx context.Context, cond *bo.PageQuery[po.RolePermission]) (*bo.SearchList[po.RolePermission], error)
 	CoverRelations(ctx context.Context, id string, data []string) error
 }
+
+type UserRoleRepo interface {
+	Create(ctx context.Context, source *po.UserRole) (string, error)
+	Update(ctx context.Context, source *po.UserRole) error
+	Get(ctx context.Context, id string) (*po.UserRole, error)
+	Delete(ctx context.Context, id string) error
+	List(ctx context.Context, cond *bo.PageQuery[po.UserRole]) (*bo.SearchList[po.UserRole], error)
+	CoverRelations(ctx context.Context, id string, data []string) error
+}

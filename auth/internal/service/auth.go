@@ -17,11 +17,13 @@ type AuthService struct {
 	authpb.UnimplementedAuthServiceServer
 	uc     *biz.AuthUsecase
 	rp     *biz.RolePermissionUsecase
+	ur     *biz.UserRoleUsecase
 	logger *log.Helper
 }
 
-func NewAuthService(logger log.Logger, uc *biz.AuthUsecase, rp *biz.RolePermissionUsecase) *AuthService {
-	return &AuthService{logger: log.NewHelper(logger), uc: uc, rp: rp}
+func NewAuthService(logger log.Logger, uc *biz.AuthUsecase,
+	rp *biz.RolePermissionUsecase, ur *biz.UserRoleUsecase) *AuthService {
+	return &AuthService{logger: log.NewHelper(logger), uc: uc, rp: rp, ur: ur}
 }
 
 func (s *AuthService) Register(ctx context.Context, req *authpb.RegisterReq) (*emptypb.Empty, error) {
@@ -248,7 +250,7 @@ func (s *AuthService) GetPermission(ctx context.Context, req *authpb.GetPermissi
 
 func (s *AuthService) ListPermission(ctx context.Context, req *authpb.ListPermissionReq) (*authpb.ListPermissionRsp, error) {
 	result, err := s.rp.ListPermission(ctx, &bo.PageQuery[po.Permission]{
-		Condition: &po.Permission{ParentId: req.ParentId},
+		Condition: &po.Permission{ParentId: req.ParentId, SubjectType: po.PermissionType(req.SubjectType)},
 	})
 	if err != nil {
 		return nil, err
@@ -296,4 +298,30 @@ func (s *AuthService) UpdateRolePermission(ctx context.Context, req *authpb.Upda
 		return nil, authpb.ErrorParameter("参数校验错误。permissionIds is %s", permissionIds)
 	}
 	return nil, s.rp.UpdateRolePermissions(ctx, roleId, permissionIds)
+}
+
+func (s *AuthService) ListUserRole(ctx context.Context, req *authpb.ListUserRoleReq) (*authpb.ListUserRoleRsp, error) {
+	userId := req.UserId
+	if len(userId) == 0 {
+		return nil, authpb.ErrorParameter("参数校验错误。userId is %s", userId)
+	}
+	roleIds, err := s.ur.ListUserRole(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+	return &authpb.ListUserRoleRsp{
+		RoleIds: roleIds,
+		UserId:  userId,
+	}, nil
+}
+
+func (s *AuthService) UpdateUserRole(ctx context.Context, req *authpb.UpdateUserRoleReq) (*emptypb.Empty, error) {
+	userId, roleIds := req.UserId, req.RoleIds
+	if len(userId) == 0 {
+		return nil, authpb.ErrorParameter("参数校验错误。userId is %s", userId)
+	}
+	if len(roleIds) == 0 {
+		return nil, authpb.ErrorParameter("参数校验错误。roleIds is %s", roleIds)
+	}
+	return nil, s.ur.UpdateUserRole(ctx, userId, roleIds)
 }
